@@ -2,9 +2,9 @@ from django.urls import include, path
 
 from rest_framework import routers
 
-from .views import(
-    # NameViewSet
-)
+# from .views import(
+#     NameViewSet
+# )
 
 app_name = 'api'
 router_v1 = routers.DefaultRouter()

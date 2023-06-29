@@ -1,12 +1,14 @@
 from django.core.mail import send_mail
-
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status, serializers
+from rest_framework import filters, mixins, status, serializers, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import User
-from .serializers import SignUpSerializer, TokenSerializer
+from reviews.models import Category, Genre, Title, User
+from .serializers import (CategorySerializer, GenreSerializer,
+                          TitleSerializer, ShowTitleSerializer,
+                          SignUpSerializer, TokenSerializer)
 
 
 CODE_LENGTH = 13
@@ -61,3 +63,37 @@ def token(request):
         'token': str(AccessToken.for_user(user)),
     }
     return Response(token, status=status.HTTP_200_OK)
+
+
+class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = (ShowTitleSerializer, TitleSerializer)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ShowTitleSerializer
+        return TitleSerializer
+
+
+class CategoryViewSet(mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet,):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('=name', )
+    lookup_field = 'slug'
+
+
+class GenreViewSet(mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   viewsets.GenericViewSet,):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('=name', )
+    lookup_field = 'slug'

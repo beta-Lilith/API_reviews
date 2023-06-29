@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-NAME_LENGTH: int = 256
-SLUG_LENGTH: int = 50
+NAME_LENGTH = 256
+SLUG_LENGTH = 50
 
 ROLE = (
     ('user', 'Пользователь'),
@@ -50,11 +50,15 @@ class Category(models.Model):
     '''Категории.'''
     name = models.CharField(
         max_length=NAME_LENGTH,
-        verbose_name='Название категории')
+        unique=True,
+        verbose_name='Название категории',
+        help_text='Укажите название категории'
+    )
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
-        verbose_name='slug'
+        verbose_name='slug',
+        help_text='Укажите slug категории'
     )
 
     class Meta:
@@ -69,11 +73,15 @@ class Genre(models.Model):
     '''Жанры.'''
     name = models.CharField(
         max_length=NAME_LENGTH,
-        verbose_name='Название жанра')
+        unique=True,
+        verbose_name='Название жанра',
+        help_text='Укажите название жанра'
+    )
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
         verbose_name='slug',
+        help_text='Укажите slug жанра'
     )
 
     class Meta:
@@ -88,16 +96,17 @@ class Title(models.Model):
     '''Произведения.'''
     name = models.CharField(
         max_length=NAME_LENGTH,
-        db_index=True,
-        verbose_name='Название произведения'
+        verbose_name='Название произведения',
+        help_text='Укажите название произведения'
     )
     description = models.TextField(
+        blank=True,
         null=True,
-        verbose_name='Описание произведения'
+        verbose_name='Описание произведения',
+        help_text='Добавьте описание произведения'
     )
     category = models.ForeignKey(
         Category,
-        blank=True,
         null=True,
         on_delete=models.SET_NULL,
         related_name='titles',
@@ -110,11 +119,10 @@ class Title(models.Model):
         verbose_name='Жанр произведения',
         help_text='Выберите жанр'
     )
-    year = models.IntegerField(
-        blank=True,
-        null=True,
+    year = models.PositiveIntegerField(
         db_index=True,
-        verbose_name='Год создания произведения'
+        verbose_name='Год создания произведения',
+        help_text='Укажите год создания произведения'
     )
 
     class Meta:
@@ -129,12 +137,20 @@ class GenreTitle(models.Model):
     '''Жанры и произведения.'''
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Жанр',
+        help_text='Выберите жанр'
     )
     title = models.ForeignKey(
         Title,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Произведение',
+        help_text='Выберите произведение'
     )
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведений'
 
     def __str__(self):
         return f'{self.genre} {self.title}'

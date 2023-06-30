@@ -56,6 +56,7 @@ class User(AbstractUser):
     )
     confirmation_code = models.CharField(
         max_length=CODE_LENGTH,
+        default='0123456789qwe',
     )
 
     @property

@@ -41,3 +41,46 @@ class User(AbstractUser):
         max_length=10,
         blank=True,
     )
+
+
+class Review(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+    text = models.TextField()
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews"
+    )
+    score = models.IntegerField()
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        unique_together = ["title", "author"]
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+
+
+class Comment(models.Model):
+    review_id = models.ForeignKey(
+        Review, on_delete=models.CASCADE, related_name="comments"
+    )
+    text = models.TextField()
+    author = models.ForeignKey(
+        User, on_delete=models.ForeignKey, related_name="comments"
+    )
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"

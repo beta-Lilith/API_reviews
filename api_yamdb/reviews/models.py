@@ -16,6 +16,7 @@ ROLES = (
 USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
 ROLE_LENGTH = 10
+CODE_LENGTH = 13
 # Categoty, Genre
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
@@ -52,6 +53,9 @@ class User(AbstractUser):
         default=USER,
         max_length=ROLE_LENGTH,
         blank=True,
+    )
+    confirmation_code = models.CharField(
+        max_length=CODE_LENGTH,
     )
 
     @property

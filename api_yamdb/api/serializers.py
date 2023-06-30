@@ -10,6 +10,9 @@ from .validators import validate_slug, validate_year
 FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
 
 
+FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
+
+
 class SignUpSerializer(serializers.ModelSerializer):
 
     class Meta:

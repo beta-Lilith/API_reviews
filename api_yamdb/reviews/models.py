@@ -1,7 +1,11 @@
+from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+REGEX_FOR_SLUG = r'^[-a-zA-Z0-9_]+$'
+NOT_REGEX_SLUG = ('Slug должен содержать только '
+                  'буквы, цифры, дефисы и подчеркивания.')
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
 
@@ -57,11 +61,15 @@ class Category(models.Model):
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
+        validators=[RegexValidator(
+            regex=REGEX_FOR_SLUG,
+            message=NOT_REGEX_SLUG)],
         verbose_name='slug',
         help_text='Укажите slug категории'
     )
 
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -80,11 +88,15 @@ class Genre(models.Model):
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
+        validators=[RegexValidator(
+            regex=REGEX_FOR_SLUG,
+            message=NOT_REGEX_SLUG)],
         verbose_name='slug',
         help_text='Укажите slug жанра'
     )
 
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -126,6 +138,7 @@ class Title(models.Model):
     )
 
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 

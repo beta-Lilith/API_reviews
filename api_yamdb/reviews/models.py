@@ -137,6 +137,9 @@ class Genre(models.Model):
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
+        validators=[RegexValidator(
+            regex=REGEX_FOR_SLUG,
+            message=NOT_REGEX_SLUG)],
         verbose_name='slug',
         help_text='Укажите slug жанра'
     )

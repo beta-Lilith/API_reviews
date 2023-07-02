@@ -1,41 +1,66 @@
+import secrets
+import string
+
 from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+# User
+USER_NAME_LENGTH = 150
+EMAIL_LENGTH = 254
+ROLE_LENGTH = 10
+CODE_LENGTH = 13
+REGEX = r'^[\w.@+-]+\Z'
+NOT_REGEX_NAME = 'Недопустимое имя пользователя.'
+NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
+NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
+# Categoty, Genre
+NAME_LENGTH = 256
+SLUG_LENGTH = 50
 REGEX_FOR_SLUG = r'^[-a-zA-Z0-9_]+$'
 NOT_REGEX_SLUG = ('Slug должен содержать только '
                   'буквы, цифры, дефисы и подчеркивания.')
-NAME_LENGTH = 256
-SLUG_LENGTH = 50
 
-ROLE = (
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
+ROLES = (
+    (USER, 'Пользователь'),
+    (MODERATOR, 'Модератор'),
+    (ADMIN, 'Администратор'),
 )
+
+CODE = ''.join(secrets.choice(
+    string.ascii_letters + string.digits) for i in range(CODE_LENGTH))
 
 
 class User(AbstractUser):
     username = models.CharField(
         'логин',
         unique=True,
-        max_length=150,
+        error_messages=NOT_UNIQUE_NAME,
+        validators=[RegexValidator(
+            regex=REGEX,
+            message=NOT_REGEX_NAME)],
+        max_length=USER_NAME_LENGTH,
     )
     email = models.EmailField(
         'email',
         unique=True,
-        max_length=254,
+        error_messages=NOT_UNIQUE_EMAIL,
+        max_length=EMAIL_LENGTH,
     )
     first_name = models.CharField(
         'имя',
-        max_length=150,
+        max_length=USER_NAME_LENGTH,
         blank=True,
     )
     last_name = models.CharField(
         'фамилия',
-        max_length=150,
-        blank=True
+        max_length=USER_NAME_LENGTH,
+        blank=True,
     )
     bio = models.TextField(
         'биография',
@@ -43,11 +68,35 @@ class User(AbstractUser):
     )
     role = models.CharField(
         'роль',
-        choices=ROLE,
-        default='user',
-        max_length=10,
+        choices=ROLES,
+        default=USER,
+        max_length=ROLE_LENGTH,
         blank=True,
     )
+    confirmation_code = models.CharField(
+        max_length=CODE_LENGTH,
+        default=CODE,
+    )
+
+    @property
+    def is_user(self):
+        self.role == USER
+
+    @property
+    def is_moderator(self):
+        self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        self.role == ADMIN
+
+    class Meta:
+        ordering = ('username',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):

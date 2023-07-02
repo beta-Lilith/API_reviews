@@ -1,8 +1,39 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from rewiews.models import Category, Genre, Title
+from reviews.models import (
+    Category, Genre, Title, User,
+    CODE_LENGTH, REGEX, USER_NAME_LENGTH,
+)
 from .validators import validate_slug, validate_year
+
+
+FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email',)
+
+    def validate_username(self, name):
+        if name == 'me':
+            raise serializers.ValidationError(FORBIDDEN_NAME)
+        return name
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        regex=REGEX,
+        max_length=USER_NAME_LENGTH,
+    )
+    confirmation_code = serializers.CharField(
+        max_length=CODE_LENGTH,
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code',)
 
 
 class CategorySerializer(serializers.ModelSerializer):

@@ -1,11 +1,9 @@
-import secrets
-import string
-
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, status, serializers, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, User
@@ -17,13 +15,12 @@ from .serializers import (CategorySerializer, GenreSerializer,
 CODE_LENGTH = 13
 
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
-EMAIL_TEXT = 'Ваш код подтверждения: {confirmation_code}'
+EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
 EMAIL_FROM = 'pupkin@yamdb.ru'
 
 USER_EXISTS = 'Данный пользователь уже существует.'
 USER_NOT_FOUND = (
-    'Такой пользователя не найден.\n'
-    'Проверьте ваш логин и код подтверждения.'
+    'Такой пользователя не найден. Проверьте ваш логин и код подтверждения.'
 )
 
 
@@ -36,14 +33,13 @@ def signup(request):
     email = serializer.validated_data['email']
     user, created = User.objects.get_or_create(username=username, email=email)
     if not created:
-        raise serializer.ValidationError(USER_EXISTS)
-    confirmation_code = ''.join(secrets.choice(
-        string.ascii_letters + string.digits) for i in range(CODE_LENGTH))
-    user.confirmation_code = confirmation_code  # нужно поле добавить в модели
-    user.save
+        raise serializers.ValidationError(USER_EXISTS)
     send_mail(
         EMAIL_SUBJECT,
-        EMAIL_TEXT.format(confirmation_code=user.confirmation_code),
+        EMAIL_TEXT.format(
+            username=username,
+            confirmation_code=user.confirmation_code
+        ),
         EMAIL_FROM,
         [user.email],
         fail_silently=False,
@@ -65,7 +61,7 @@ def token(request):
     except User.DoesNotExist:
         return Response(USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
     token = {
-        'token': AccessToken.for_user(user),
+        'token': str(AccessToken.for_user(user)),
     }
     return Response(token, status=status.HTTP_200_OK)
 
@@ -73,6 +69,7 @@ def token(request):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = (ShowTitleSerializer, TitleSerializer)
+    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
@@ -88,6 +85,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet,):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name', )
     lookup_field = 'slug'

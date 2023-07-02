@@ -5,7 +5,7 @@ from reviews.models import (
     Category, Genre, Title, User,
     CODE_LENGTH, REGEX, USER_NAME_LENGTH,
 )
-from .validators import validate_slug, validate_year
+from .validators import validate_year
 
 
 FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
@@ -37,9 +37,6 @@ class TokenSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    slug = serializers.SlugField(
-        validators=[validate_slug]
-    )
 
     class Meta:
         model = Category
@@ -47,9 +44,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    slug = serializers.SlugField(
-        validators=[validate_slug]
-    )
 
     class Meta:
         model = Genre

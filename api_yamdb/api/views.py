@@ -11,6 +11,7 @@ from .serializers import (CategorySerializer, GenreSerializer,
                           TitleSerializer, ShowTitleSerializer,
                           SignUpSerializer, TokenSerializer)
 
+
 CODE_LENGTH = 13
 
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
@@ -68,7 +69,6 @@ def token(request):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = (ShowTitleSerializer, TitleSerializer)
-    # permission_classes = (IsAdminOrReadOnly, )
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')

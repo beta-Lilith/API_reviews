@@ -7,6 +7,7 @@ from reviews.models import (
 )
 from .validators import validate_slug, validate_year
 
+
 FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
 
 

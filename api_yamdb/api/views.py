@@ -1,7 +1,6 @@
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import api_view
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status, serializers, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
@@ -69,7 +68,6 @@ def token(request):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = (ShowTitleSerializer, TitleSerializer)
-    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
@@ -85,7 +83,6 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet,):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name', )
     lookup_field = 'slug'

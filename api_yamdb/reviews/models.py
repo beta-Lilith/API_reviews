@@ -80,15 +80,15 @@ class User(AbstractUser):
 
     @property
     def is_user(self):
-        self.role == USER
+        return self.role == USER
 
     @property
     def is_moderator(self):
-        self.role == MODERATOR
+        return self.role == MODERATOR
 
     @property
     def is_admin(self):
-        self.role == ADMIN
+        return self.role == ADMIN
 
     class Meta:
         ordering = ('username',)

@@ -1,17 +1,28 @@
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status, serializers, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, User
-from .serializers import (CategorySerializer, GenreSerializer,
-                          TitleSerializer, ShowTitleSerializer,
-                          SignUpSerializer, TokenSerializer)
+from .permissions import (
+    IsAdmin,
+    IsAdminOrReadOnly,
+    IsAuthorOrReadOnly,
+    IsModerator,
+)
+from .serializers import (
+    CategorySerializer,
+    GenreSerializer,
+    TitleSerializer,
+    ShowTitleSerializer,
+    SignUpSerializer,
+    TokenSerializer,
+    UserSerializer,
+)
 
-
-CODE_LENGTH = 13
 
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
 EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
@@ -24,6 +35,7 @@ USER_NOT_FOUND = (
 
 
 @api_view(['POST'])
+@permission_classes((AllowAny,))
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
     if not serializer.is_valid():
@@ -47,6 +59,7 @@ def signup(request):
 
 
 @api_view(['POST'])
+@permission_classes((AllowAny,))
 def token(request):
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
@@ -63,6 +76,32 @@ def token(request):
         'token': str(AccessToken.for_user(user)),
     }
     return Response(token, status=status.HTTP_200_OK)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdmin,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+    # http_method_names = ('get', 'post', 'patch', 'delete',)
+
+    @action(
+        methods=('get', 'patch'),
+        detail=False,
+        url_path='me',
+        permission_classes=(IsAuthenticated,),
+    )
+    def me(self, request):
+        me = User.objects.get(id=request.user.id)
+        serializer = self.get_serializer(me, data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save(partial=True, role=request.user.role)
+        return Response(
+            serializer.data, status=status.HTTP_200_OK)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

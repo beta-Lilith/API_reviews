@@ -8,7 +8,7 @@ from reviews.models import (
 from .validators import validate_year
 
 
-FORBIDDEN_NAME = 'Имя "me" использовать нельзя!'
+FORBIDDEN_NAME = 'Имя me использовать нельзя!'
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -34,6 +34,15 @@ class TokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'confirmation_code',)
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer):

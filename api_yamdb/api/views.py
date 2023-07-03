@@ -67,11 +67,11 @@ def token(request):
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
     try:
-        user = User.objects.get(
-            username=username, confirmation_code=confirmation_code
-        )
+        user = User.objects.get(username=username)
     except User.DoesNotExist:
         return Response(USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
+    if confirmation_code != user.confirmation_code:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     token = {
         'token': str(AccessToken.for_user(user)),
     }
@@ -85,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'
-    # http_method_names = ('get', 'post', 'patch', 'delete',)
+    http_method_names = ('get', 'post', 'patch', 'delete',)
 
     @action(
         methods=('get', 'patch'),
@@ -94,8 +94,11 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        me = User.objects.get(id=request.user.id)
-        serializer = self.get_serializer(me, data=request.data)
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
         if not serializer.is_valid():
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST)

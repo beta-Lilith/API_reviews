@@ -3,7 +3,7 @@ from rest_framework.relations import SlugRelatedField
 
 from reviews.models import (
     Category, Genre, Title, User,
-    CODE_LENGTH, REGEX, USER_NAME_LENGTH,
+    CODE_LENGTH, EMAIL_LENGTH,  REGEX, USER_NAME_LENGTH,
 )
 from .validators import validate_year
 
@@ -12,6 +12,15 @@ FORBIDDEN_NAME = 'Имя me использовать нельзя!'
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+
+    username = serializers.RegexField(
+        regex=REGEX,
+        max_length=USER_NAME_LENGTH,
+    )
+    email = serializers.EmailField(
+        max_length=EMAIL_LENGTH,
+    )
+
     class Meta:
         model = User
         fields = ('username', 'email',)

@@ -1,9 +1,10 @@
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import filters, mixins, status, serializers, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Title, User
@@ -29,6 +30,7 @@ EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmatio
 EMAIL_FROM = 'pupkin@yamdb.ru'
 
 USER_EXISTS = 'Данный пользователь уже существует.'
+USER_NOT_UNIQUE_DATA = 'Данный логин или email уже кем-то используется.'
 USER_NOT_FOUND = (
     'Такой пользователя не найден. Проверьте ваш логин и код подтверждения.'
 )
@@ -42,9 +44,14 @@ def signup(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
-    user, created = User.objects.get_or_create(username=username, email=email)
-    if not created:
-        raise serializers.ValidationError(USER_EXISTS)
+    try:
+        user, created = User.objects.get_or_create(
+            username=username, email=email)
+        if not created:
+            return Response(USER_EXISTS, status=status.HTTP_200_OK)
+    except IntegrityError:
+        return Response(
+            USER_NOT_UNIQUE_DATA, status=status.HTTP_400_BAD_REQUEST)
     send_mail(
         EMAIL_SUBJECT,
         EMAIL_TEXT.format(

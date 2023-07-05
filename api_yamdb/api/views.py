@@ -17,8 +17,7 @@ from reviews.models import Category, Genre, Title, User, Review
 from .permissions import (
     IsAdmin,
     IsAdminOrReadOnly,
-    IsAuthorOrReadOnly,
-    IsModeratorOrReadOnly,
+    IsAdminOrModeratorOrAuthorOrReadOnly,
 )
 from .serializers import (
     CategorySerializer,
@@ -127,7 +126,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')).order_by('name')
 
     serializer_class = (ShowTitleSerializer, TitleSerializer)
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdmin,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
 
@@ -143,7 +142,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
                       viewsets.GenericViewSet,):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdmin,)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name', )
     lookup_field = 'slug'
@@ -155,6 +154,7 @@ class GenreViewSet(mixins.CreateModelMixin,
                    viewsets.GenericViewSet,):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name', )
     lookup_field = 'slug'
@@ -164,8 +164,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
-        IsModeratorOrReadOnly,
+        IsAdminOrModeratorOrAuthorOrReadOnly,
     )
 
     def get_queryset(self):
@@ -181,8 +180,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (
         IsAuthenticatedOrReadOnly,
-        IsAdminOrReadOnly,
-        IsModeratorOrReadOnly,
+        IsAdminOrModeratorOrAuthorOrReadOnly,
     )
 
     def get_queryset(self):

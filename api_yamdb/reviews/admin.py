@@ -41,7 +41,14 @@ class GenreTitle(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'username', 'email', 'confirmation_code', 'first_name', 'last_name', 'bio', 'role'
+        'id',
+        'username',
+        'email',
+        'confirmation_code',
+        'first_name',
+        'last_name',
+        'bio',
+        'role',
     )
     list_editable = ('role',)
     search_fields = ('username',)

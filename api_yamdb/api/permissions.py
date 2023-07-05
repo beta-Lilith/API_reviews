@@ -15,13 +15,6 @@ class IsAdmin(permissions.BasePermission):
         )
 
 
-class IsModerator(permissions.BasePermission):
-    message = NOT_ALLOWED_TO_CHANGE
-
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_moderator
-
-
 class IsAdminOrReadOnly(permissions.BasePermission):
     message = NOT_ALLOWED_TO_CHANGE
 
@@ -32,11 +25,13 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         )
 
 
-class IsAuthorOrReadOnly(permissions.BasePermission):
+class IsAdminOrModeratorOrAuthorOrReadOnly(permissions.BasePermission):
     message = NOT_ALLOWED_TO_CHANGE
 
     def has_object_permission(self, request, view, obj):
         return (
             request.method in permissions.SAFE_METHODS
+            or request.user.is_admin
+            or request.user.is_moderator
             or obj.author == request.user
         )

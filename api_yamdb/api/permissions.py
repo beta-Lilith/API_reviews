@@ -1,6 +1,5 @@
 from rest_framework import permissions
 
-
 NOT_ALLOWED_TO_CHANGE = 'У вас недостаточно прав.'
 
 

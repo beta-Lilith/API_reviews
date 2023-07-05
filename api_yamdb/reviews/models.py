@@ -1,14 +1,10 @@
 import secrets
 import string
 
-from django.core.validators import (
-    RegexValidator,
-    MaxValueValidator,
-    MinValueValidator,
-)
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
-
 
 # User
 USER_NAME_LENGTH = 150

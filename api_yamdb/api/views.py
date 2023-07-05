@@ -3,6 +3,8 @@ from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (
     AllowAny,
@@ -10,24 +12,23 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
-from rest_framework import filters, mixins, status, viewsets
 from rest_framework_simplejwt.tokens import AccessToken
 
-from reviews.models import Category, Genre, Title, User, Review
+from reviews.models import Category, Genre, Review, Title, User
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
-    IsAdminOrReadOnly,
     IsAdminOrModeratorOrAuthorOrReadOnly,
+    IsAdminOrReadOnly,
 )
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
     ShowTitleSerializer,
     SignUpSerializer,
+    TitleSerializer,
     TokenSerializer,
     UserSerializer,
 )
@@ -49,14 +50,16 @@ USER_NOT_FOUND = (
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
     if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
     try:
         user, created = User.objects.get_or_create(
             username=username, email=email)
         if not created:
-            return Response(USER_EXISTS, status=status.HTTP_200_OK)
+            return Response(
+                USER_EXISTS, status=status.HTTP_200_OK)
     except IntegrityError:
         return Response(
             USER_NOT_UNIQUE_DATA, status=status.HTTP_400_BAD_REQUEST)
@@ -64,13 +67,13 @@ def signup(request):
         EMAIL_SUBJECT,
         EMAIL_TEXT.format(
             username=username,
-            confirmation_code=user.confirmation_code
-        ),
+            confirmation_code=user.confirmation_code),
         EMAIL_FROM,
         [user.email],
         fail_silently=False,
     )
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -78,19 +81,23 @@ def signup(request):
 def token(request):
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
     try:
         user = User.objects.get(username=username)
     except User.DoesNotExist:
-        return Response(USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
     if confirmation_code != user.confirmation_code:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     token = {
         'token': str(AccessToken.for_user(user)),
     }
-    return Response(token, status=status.HTTP_200_OK)
+    return Response(
+        token, status=status.HTTP_200_OK)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -145,7 +152,7 @@ class CategoryViewSet(mixins.CreateModelMixin,
     serializer_class = CategorySerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('=name', )
+    search_fields = ('=name',)
     lookup_field = 'slug'
 
 
@@ -157,7 +164,7 @@ class GenreViewSet(mixins.CreateModelMixin,
     serializer_class = GenreSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('=name', )
+    search_fields = ('=name',)
     lookup_field = 'slug'
 
 

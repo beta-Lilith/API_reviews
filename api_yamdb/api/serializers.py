@@ -78,12 +78,12 @@ class ShowTitleSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True
     )
-    # rating = serializers.IntegerField(read_only=True, source='')
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'rating' 'description', 'genre', 'category'
         )
 
 
@@ -107,10 +107,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True,
-    )
+
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -134,10 +131,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    review = serializers.SlugRelatedField(
-        slug_field='text',
-        read_only=True
-    )
+
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True

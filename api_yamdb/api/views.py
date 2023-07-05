@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, api_view, permission_classes
@@ -118,6 +119,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    queryset = Title.objects.all().annotate(
+        Avg("reviews__score")
+    ).order_by("name")
     queryset = Title.objects.all()
     serializer_class = (ShowTitleSerializer, TitleSerializer)
     filter_backends = (DjangoFilterBackend,)

@@ -6,6 +6,8 @@ from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import models
 
+from .validators import validate_year
+
 # User
 USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
@@ -18,9 +20,13 @@ NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 # Categoty, Genre
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
-REGEX_FOR_SLUG = r'^[-a-zA-Z0-9_]+$'
-NOT_REGEX_SLUG = ('Slug должен содержать только '
-                  'буквы, цифры, дефисы и подчеркивания.')
+POST_TITLE_INFO = (
+    'Название: {name:.15}\n'
+    'Категория: {category}\n'
+    'Жанр: {genre}\n',
+    'Описание: {description:.30}\n',
+    'Год: {year}'
+)
 
 USER = 'user'
 MODERATOR = 'moderator'
@@ -99,26 +105,33 @@ class User(AbstractUser):
         return self.username
 
 
-class Category(models.Model):
-    '''Категории.'''
+class CategoryGanre(models.Model):
+    """Абстрактный базовый класс для категорий и жанров."""
     name = models.CharField(
         max_length=NAME_LENGTH,
         unique=True,
-        verbose_name='Название категории',
-        help_text='Укажите название категории'
+        verbose_name='Название',
+        help_text='Укажите название'
     )
     slug = models.SlugField(
         max_length=SLUG_LENGTH,
         unique=True,
-        validators=[RegexValidator(
-            regex=REGEX_FOR_SLUG,
-            message=NOT_REGEX_SLUG)],
-        verbose_name='slug',
-        help_text='Укажите slug категории'
+        verbose_name='Уникальный фрагмент URL-адреса',
+        help_text='Укажите уникальный фрагмент URL-адреса'
     )
 
     class Meta:
+        abstract = True
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+
+class Category(CategoryGanre):
+    """Категории."""
+
+    class Meta(CategoryGanre.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -126,26 +139,10 @@ class Category(models.Model):
         return self.name
 
 
-class Genre(models.Model):
-    '''Жанры.'''
-    name = models.CharField(
-        max_length=NAME_LENGTH,
-        unique=True,
-        verbose_name='Название жанра',
-        help_text='Укажите название жанра'
-    )
-    slug = models.SlugField(
-        max_length=SLUG_LENGTH,
-        unique=True,
-        validators=[RegexValidator(
-            regex=REGEX_FOR_SLUG,
-            message=NOT_REGEX_SLUG)],
-        verbose_name='slug',
-        help_text='Укажите slug жанра'
-    )
+class Genre(CategoryGanre):
+    """Жанры."""
 
-    class Meta:
-        ordering = ('name',)
+    class Meta(CategoryGanre.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -154,7 +151,7 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    '''Произведения.'''
+    """Произведения."""
     name = models.CharField(
         max_length=NAME_LENGTH,
         verbose_name='Название произведения',
@@ -181,6 +178,7 @@ class Title(models.Model):
         help_text='Выберите жанр'
     )
     year = models.PositiveIntegerField(
+        validators=(validate_year,),
         db_index=True,
         verbose_name='Год создания произведения',
         help_text='Укажите год создания произведения'
@@ -192,11 +190,17 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
-        return self.name
+        POST_TITLE_INFO.format(
+            name=self.name,
+            category=self.category,
+            genre=self.genre,
+            description=self.description,
+            year=self.year
+        )
 
 
 class GenreTitle(models.Model):
-    '''Жанры и произведения.'''
+    """Жанры и произведения."""
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,

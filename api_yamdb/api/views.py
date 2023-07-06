@@ -134,7 +134,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         rating=Avg('reviews__score')).order_by('name')
 
     serializer_class = (ShowTitleSerializer, TitleSerializer)
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -145,10 +145,10 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class CategoryGenreViewSet(mixins.CreateModelMixin,
-                           mixins.DestroyModelMixin,
-                           mixins.ListModelMixin,
-                           viewsets.GenericViewSet,):
-    permission_classes = (IsAuthenticatedOrReadOnly, IsAdminOrReadOnly,)
+                      mixins.DestroyModelMixin,
+                      mixins.ListModelMixin,
+                      viewsets.GenericViewSet,):
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
     lookup_field = 'slug'

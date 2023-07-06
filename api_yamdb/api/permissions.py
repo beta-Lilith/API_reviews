@@ -14,7 +14,6 @@ class IsAdmin(permissions.BasePermission):
 
 
 class IsAdminOrReadOnly(IsAdmin):
-    message = NOT_ALLOWED_TO_CHANGE
 
     def has_permission(self, request, view):
         return (
@@ -24,7 +23,6 @@ class IsAdminOrReadOnly(IsAdmin):
 
 
 class IsAdminOrModeratorOrAuthorOrReadOnly(IsAdminOrReadOnly):
-    message = NOT_ALLOWED_TO_CHANGE
 
     def has_permission(self, request, view):
         return (

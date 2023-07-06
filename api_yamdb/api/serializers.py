@@ -6,7 +6,7 @@ from reviews.models import (
     CODE_LENGTH, EMAIL_LENGTH, REGEX, USER_NAME_LENGTH,
     Category, Comment, Genre, Review, Title, User,
 )
-from .validators import validate_username, validate_year
+from reviews.validators import validate_username, validate_year
 
 
 NOT_UNIQUE_REVIEW = 'Вы не можете добавить более одного отзыва на произведение'

@@ -1,25 +1,27 @@
-import secrets
-import string
-
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    RegexValidator)
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from .validators import validate_year
+from .validators import validate_year, validate_username
 
 # User
 USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
-ROLE_LENGTH = 10
 CODE_LENGTH = 13
-REGEX = r'^[\w.@+-]+\Z'
-NOT_REGEX_NAME = 'Недопустимое имя пользователя.'
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 # Categoty, Genre
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
+CHAR_SLICE = 15
+USER_INFO = (
+    'Имя пользователя: {username:.15}\n'
+    'Почта: {email}\n'
+    'Имя: {first_name}\n'
+    'Фамилия: {last_name}\n'
+    'Биография: {bio:.15}\n'
+    'Права доступа: {role}\n'
+)
 TITLE_INFO = (
     'Название: {name:.15}\n'
     'Категория: {category}\n'
@@ -38,18 +40,13 @@ ROLES = (
     (ADMIN, 'Администратор'),
 )
 
-CODE = ''.join(secrets.choice(
-    string.ascii_letters + string.digits) for i in range(CODE_LENGTH))
-
 
 class User(AbstractUser):
     username = models.CharField(
         'логин',
         unique=True,
         error_messages=NOT_UNIQUE_NAME,
-        validators=[RegexValidator(
-            regex=REGEX,
-            message=NOT_REGEX_NAME)],
+        validators=(validate_username,),
         max_length=USER_NAME_LENGTH,
     )
     email = models.EmailField(
@@ -76,12 +73,8 @@ class User(AbstractUser):
         'роль',
         choices=ROLES,
         default=USER,
-        max_length=ROLE_LENGTH,
+        max_length=max(len(role[1]) for role in ROLES),
         blank=True,
-    )
-    confirmation_code = models.CharField(
-        max_length=CODE_LENGTH,
-        default=CODE,
     )
 
     @property
@@ -102,7 +95,15 @@ class User(AbstractUser):
         verbose_name_plural = 'Пользователи'
 
     def __str__(self):
-        return self.username
+        return USER_INFO.format(
+            username=self.username,
+            email=self.email,
+            first_name=self.first_name,
+            last_name=self.last_name,
+            bio=self.bio,
+            role=self.role,
+            confirmation_code=self.confirmation_code,
+        )
 
 
 class CategoryGanre(models.Model):
@@ -190,7 +191,7 @@ class Title(models.Model):
         verbose_name_plural = 'Произведения'
 
     def __str__(self):
-        TITLE_INFO.format(
+        return TITLE_INFO.format(
             name=self.name,
             category=self.category,
             genre=self.genre,

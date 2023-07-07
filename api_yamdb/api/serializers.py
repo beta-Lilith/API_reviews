@@ -85,7 +85,7 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
     )
     year = serializers.IntegerField(
-        validators=[validate_year],
+        validators=(validate_year,),
     )
 
     class Meta:

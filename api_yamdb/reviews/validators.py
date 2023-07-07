@@ -11,7 +11,8 @@ NOT_REGEX_NAME = (
     'Можно использовать только буквы, символы {allowed_chars} и цифры, '
     'вы использовали: {used_chars}'
 )
-ERROR_MESSAGE = 'Неверно указан год создания произведения: {value}'
+ERROR_MESSAGE = ('Неверно указан год создания произведения: {value}.'
+                 'Год создания не может быть больше текущего года: {year_now}')
 
 
 def check_regex(REGEX):
@@ -39,5 +40,7 @@ def validate_username(name):
 
 def validate_year(value):
     if value > timezone.now().year:
-        raise ValidationError(ERROR_MESSAGE.format(value=value))
+        raise ValidationError(
+            ERROR_MESSAGE.format(value=value, year_now=timezone.now().year)
+        )
     return value

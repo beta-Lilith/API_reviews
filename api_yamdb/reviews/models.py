@@ -16,6 +16,7 @@ SLUG_LENGTH = 50
 CHAR_SLICE = 15
 MIN_SCORE = 1
 MAX_SCORE = 10
+SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}.'
 # __str__ info
 USER_INFO = (
     'Имя пользователя: {username:.15}\n'
@@ -256,6 +257,7 @@ class ReviewComment(models.Model):
     class Meta:
         abstract = True
         ordering = ('author',)
+        default_related_name = '%(class)ss'
 
     def __str__(self):
         return REVIEW_COMMENT_INFO.format(
@@ -272,13 +274,12 @@ class Review(ReviewComment):
         Title,
         verbose_name='произведение',
         on_delete=models.CASCADE,
-        related_name='reviews',
     )
     score = models.PositiveSmallIntegerField(
         'рейтинг',
         validators=(
-            MinValueValidator(MIN_SCORE),
-            MaxValueValidator(MAX_SCORE),
+            MinValueValidator(MIN_SCORE, SCORE_ERROR),
+            MaxValueValidator(MAX_SCORE, SCORE_ERROR),
         )
     )
 
@@ -300,7 +301,6 @@ class Comment(ReviewComment):
         Review,
         verbose_name='отзыв',
         on_delete=models.CASCADE,
-        related_name='comments',
     )
 
     class Meta(ReviewComment.Meta):

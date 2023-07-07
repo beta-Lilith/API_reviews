@@ -5,14 +5,16 @@ from django.utils import timezone
 
 
 REGEX = r'^[\w.@+-]+'
-NOT_ALLOWED_NAME = 'me'
+URL_PATH_NAME = 'me'
 FORBIDDEN_NAME = 'Имя {name} использовать нельзя!'
 NOT_REGEX_NAME = (
     'Можно использовать только буквы, символы {allowed_chars} и цифры, '
     'вы использовали: {used_chars}'
 )
-ERROR_MESSAGE = ('Неверно указан год создания произведения: {value}.'
-                 'Год создания не может быть больше текущего года: {year_now}')
+ERROR_MESSAGE = (
+    'Неверно указан год создания произведения: {value}.'
+    'Год создания не может быть больше текущего года: {year_now}'
+)
 
 
 def check_regex(REGEX):
@@ -25,8 +27,8 @@ def check_regex(REGEX):
 
 
 def validate_username(name):
-    if name == NOT_ALLOWED_NAME:
-        raise ValidationError(FORBIDDEN_NAME.format(name=NOT_ALLOWED_NAME))
+    if name == URL_PATH_NAME:
+        raise ValidationError(FORBIDDEN_NAME.format(name=URL_PATH_NAME))
     used_wrong_chars = ' '.join(re.sub(REGEX, '', name))
     if used_wrong_chars:
         allowed_chars = ' '.join(check_regex(REGEX))

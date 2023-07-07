@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import Category, Genre, Review, Title, User
+from reviews.validators import URL_PATH_NAME
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
@@ -122,18 +123,16 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         methods=('get', 'patch'),
         detail=False,
-        url_path='me',
+        url_path=URL_PATH_NAME,
         permission_classes=(IsAuthenticated,),
     )
-    def me(self, request):
+    def user_info(self, request):
         serializer = self.get_serializer(
             request.user,
             data=request.data,
             partial=True,
         )
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
         serializer.save(partial=True, role=request.user.role)
         return Response(
             serializer.data, status=status.HTTP_200_OK)

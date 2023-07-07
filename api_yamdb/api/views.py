@@ -40,6 +40,9 @@ EMAIL_FROM = 'pupkin@yamdb.ru'
 
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
+USER_NOT_UNIQUE_DATA = (
+    'Логин {username} и почта {email} уже кем-то используются.'
+)
 
 BAD_TOKEN = (
     'Проверьте, что вводите корректный код подтверждения из почты. '
@@ -72,6 +75,10 @@ def signup(request):
                 USER_NOT_UNIQUE_EMAIL.format(email=email),
                 status=status.HTTP_400_BAD_REQUEST
             )
+        return Response(
+            USER_NOT_UNIQUE_DATA.format(username=username, email=email),
+            status=status.HTTP_400_BAD_REQUEST
+        )
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         EMAIL_SUBJECT,

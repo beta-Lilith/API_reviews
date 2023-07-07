@@ -35,16 +35,17 @@ from .serializers import (
 )
 
 
+# Send_mail info
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
 EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
 EMAIL_FROM = 'pupkin@yamdb.ru'
-
+# Func signup
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
 USER_NOT_UNIQUE_DATA = (
     'Логин {username} и почта {email} уже кем-то используются.'
 )
-
+# Fun token
 BAD_TOKEN = (
     'Проверьте, что вводите корректный код подтверждения из почты. '
     'Новый код доступен по адресу /api/v1/auth/signup/'
@@ -125,7 +126,7 @@ class UserViewSet(viewsets.ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete',)
 
     @action(
-        methods=('get', 'patch'),
+        methods=('get', 'patch',),
         detail=False,
         url_path=URL_PATH_NAME,
         permission_classes=(IsAuthenticated,),
@@ -148,13 +149,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('name')
 
-    serializer_class = (ShowTitleSerializer, TitleSerializer)
+    serializer_class = (ShowTitleSerializer, TitleSerializer,)
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
+        if self.action in ('list', 'retrieve',):
             return ShowTitleSerializer
         return TitleSerializer
 

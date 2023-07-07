@@ -4,13 +4,15 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 
+# Func validate_username
 REGEX = r'^[\w.@+-]+'
-URL_PATH_NAME = 'me'
-FORBIDDEN_NAME = 'Имя {name} использовать нельзя!'
 NOT_REGEX_NAME = (
     'Можно использовать только буквы, символы {allowed_chars} и цифры, '
     'вы использовали: {used_chars}'
 )
+URL_PATH_NAME = 'me'
+FORBIDDEN_NAME = 'Имя {name} использовать нельзя!'
+# Func validate_year
 FUTURE_YEAR = (
     'Неверно указан год создания произведения: {value}.'
     'Год создания не может быть больше текущего года: {year_now}'

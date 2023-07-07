@@ -37,7 +37,7 @@ from .serializers import (
 
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
 EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
-EMAIL_FROM = 'puidin@yamdb.ru'
+EMAIL_FROM = 'pupkin@yamdb.ru'
 
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'

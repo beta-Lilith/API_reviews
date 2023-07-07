@@ -29,11 +29,11 @@ TITLE_INFO = (
     'Название: {name:.15}\n'
     'Категория: {category}\n'
     'Жанр: {genre}\n'
-    'Описание: {description:.30}\n'
+    'Описание: {description:.15}\n'
     'Год: {year}'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text}\n'
+    'Текст: {self.text:.15}\n'
     'Автор: {self.author}\n'
     'Дата публикации: {self.pub_date}\n'
 )

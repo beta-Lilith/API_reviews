@@ -102,7 +102,6 @@ class User(AbstractUser):
             last_name=self.last_name,
             bio=self.bio,
             role=self.role,
-            confirmation_code=self.confirmation_code,
         )
 
 

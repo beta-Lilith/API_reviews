@@ -10,10 +10,12 @@ EMAIL_LENGTH = 254
 CODE_LENGTH = 13
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
-# Categoty, Genre
+# Categoty, Genre,Review
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
 CHAR_SLICE = 15
+MIN_SCORE = 1
+MAX_SCORE = 10
 # __str__ info
 USER_INFO = (
     'Имя пользователя: {username:.15}\n'
@@ -29,6 +31,11 @@ TITLE_INFO = (
     'Жанр: {genre}\n'
     'Описание: {description:.30}\n'
     'Год: {year}'
+)
+REVIEW_COMMENT_INFO = (
+    'Текст: {self.text}\n'
+    'Автор: {self.author}\n'
+    'Дата публикации: {self.pub_date}\n'
 )
 
 USER = 'user'
@@ -229,7 +236,36 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class Review(models.Model):
+class ReviewComment(models.Model):
+    """Базовый класс для отзывов и комментариев."""
+
+    text = models.TextField(
+        'текст',
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='пользователь',
+        on_delete=models.CASCADE,
+    )
+    pub_date = models.DateTimeField(
+        'дата публикации',
+        auto_now_add=True,
+        db_index=True,
+    )
+
+    class Meta:
+        abstract = True
+        ordering = ('author',)
+
+    def __str__(self):
+        return REVIEW_COMMENT_INFO.format(
+            text=self.text,
+            author=self.author,
+            pub_date=self.pub_date,
+        )
+
+
+class Review(ReviewComment):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -238,32 +274,17 @@ class Review(models.Model):
         on_delete=models.CASCADE,
         related_name='reviews',
     )
-    text = models.TextField(
-        'текст',
-    )
-    author = models.ForeignKey(
-        User,
-        verbose_name='автор',
-        on_delete=models.CASCADE,
-        related_name='reviews',
-    )
     score = models.PositiveSmallIntegerField(
         'рейтинг',
         validators=(
-            MinValueValidator(1, 'Допустимы значения от 1 до 10'),
-            MaxValueValidator(10, 'Допустимы значения от 1 до 10'),
+            MinValueValidator(MIN_SCORE),
+            MaxValueValidator(MAX_SCORE),
         )
     )
-    pub_date = models.DateTimeField(
-        'дата публикации',
-        auto_now_add=True,
-        db_index=True,
-    )
 
-    class Meta:
+    class Meta(ReviewComment.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
-        ordering = ('pub_date',)
         constraints = [
             models.UniqueConstraint(
                 fields=('title', 'author',),
@@ -272,7 +293,7 @@ class Review(models.Model):
         ]
 
 
-class Comment(models.Model):
+class Comment(ReviewComment):
     """Комментарии к отзывам."""
 
     review = models.ForeignKey(
@@ -281,22 +302,7 @@ class Comment(models.Model):
         on_delete=models.CASCADE,
         related_name='comments',
     )
-    text = models.TextField(
-        'текст',
-    )
-    author = models.ForeignKey(
-        User,
-        verbose_name='пользователь',
-        on_delete=models.CASCADE,
-        related_name='comments',
-    )
-    pub_date = models.DateTimeField(
-        'дата публикации',
-        auto_now_add=True,
-        db_index=True,
-    )
 
-    class Meta:
+    class Meta(ReviewComment.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
-        ordering = ('pub_date',)

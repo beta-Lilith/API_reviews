@@ -1,6 +1,24 @@
 from django.contrib import admin
 
-from .models import Category, Genre, GenreTitle, Title, User
+from .models import (
+    Category,
+    Comment,
+    Genre,
+    GenreTitle,
+    Review,
+    Title,
+    User,
+)
+
+
+@admin.register(Title)
+class TitleAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'category', 'year', 'description'
+    )
+    search_fields = ('name', 'category', 'year')
+    list_filter = ('category', 'genre')
+    empty_value_display = '-пусто-'
 
 
 @admin.register(Category)
@@ -21,20 +39,24 @@ class GenreAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Title)
-class TitleAdmin(admin.ModelAdmin):
-    list_display = (
-        'name', 'category', 'year', 'description'
-    )  # , 'rating'
-    search_fields = ('name', 'category', 'year')
-    list_filter = ('category', 'genre')
-    empty_value_display = '-пусто-'
-
-
 @admin.register(GenreTitle)
 class GenreTitle(admin.ModelAdmin):
     list_display = (
         'title', 'genre'
+    )
+
+
+@admin.register(Review)
+class ReviewsAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'title', 'text', 'author', 'score', 'pub_date'
+    )
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'review', 'text', 'author', 'pub_date'
     )
 
 
@@ -44,7 +66,6 @@ class UserAdmin(admin.ModelAdmin):
         'id',
         'username',
         'email',
-        'confirmation_code',
         'first_name',
         'last_name',
         'bio',

@@ -1,5 +1,4 @@
 from django.urls import include, path
-
 from rest_framework import routers
 
 from .views import (
@@ -48,8 +47,11 @@ router_v1.register(
     basename='users',
 )
 
+authpatterns = [
+    path('auth/signup/', signup, name='signup'),
+    path('auth/token/', token, name='token'),
+]
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    path('v1/auth/signup/', signup, name='signup'),
-    path('v1/auth/token/', token, name='token'),
+    path('v1/', include(authpatterns)),
 ]

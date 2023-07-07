@@ -71,6 +71,7 @@ class User(AbstractUser):
     bio = models.TextField(
         'биография',
         blank=True,
+        help_text='Расскажите о себе.',
     )
     role = models.CharField(
         'роль',

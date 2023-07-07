@@ -143,6 +143,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Представление для произведений."""
+
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('name')
 
@@ -163,6 +165,7 @@ class CategoryGenreViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
+    """Базовое представление для жанров и категорий."""
 
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
@@ -171,16 +174,22 @@ class CategoryGenreViewSet(
 
 
 class CategoryViewSet(CategoryGenreViewSet):
+    """Представление для категорий."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class GenreViewSet(CategoryGenreViewSet):
+    """Представление для жанров."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Представление для отзывов."""
+
     serializer_class = ReviewSerializer
     permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
 
@@ -194,6 +203,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Представление для комментариев."""
+
     serializer_class = CommentSerializer
     permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
 

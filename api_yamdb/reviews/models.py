@@ -13,7 +13,6 @@ NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 # Categoty, Genre,Review
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
-CHAR_SLICE = 15
 MIN_SCORE = 1
 MAX_SCORE = 10
 SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}.'
@@ -38,11 +37,10 @@ REVIEW_COMMENT_INFO = (
     'Автор: {self.author}\n'
     'Дата публикации: {self.pub_date}\n'
 )
-
+# Roles
 USER = 'user'
 MODERATOR = 'moderator'
 ADMIN = 'admin'
-
 ROLES = (
     (USER, 'Пользователь'),
     (MODERATOR, 'Модератор'),

@@ -1,10 +1,11 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, serializers, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (
     AllowAny,
@@ -37,10 +38,15 @@ EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации
 EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
 EMAIL_FROM = 'pupkin@yamdb.ru'
 
-USER_EXISTS = 'Данный пользователь уже существует.'
-USER_NOT_UNIQUE_DATA = 'Данный логин или email уже кем-то используется.'
-USER_NOT_FOUND = (
-    'Такой пользователя не найден. Проверьте ваш логин и код подтверждения.'
+USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
+USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
+USER_NOT_UNIQUE_DATA = (
+    'Логин {username} и почта {email} уже кем-то используются.'
+)
+
+BAD_TOKEN = (
+    'Проверьте, что вводите корректный код подтверждения из почты. '
+    'Новый код доступен по адресу /api/v1/auth/signup/'
 )
 
 
@@ -48,25 +54,37 @@ USER_NOT_FOUND = (
 @permission_classes((AllowAny,))
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
     try:
         user, created = User.objects.get_or_create(
             username=username, email=email)
-        if not created:
-            return Response(
-                USER_EXISTS, status=status.HTTP_200_OK)
     except IntegrityError:
+        try:
+            User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                USER_NOT_UNIQUE_USERNAME.format(username=username),
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                USER_NOT_UNIQUE_EMAIL.format(email=email),
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return Response(
-            USER_NOT_UNIQUE_DATA, status=status.HTTP_400_BAD_REQUEST)
+            USER_NOT_UNIQUE_DATA.format(username=username, email=email),
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    confirmation_code = default_token_generator.make_token(user)
     send_mail(
         EMAIL_SUBJECT,
         EMAIL_TEXT.format(
             username=username,
-            confirmation_code=user.confirmation_code),
+            confirmation_code=confirmation_code),
         EMAIL_FROM,
         [user.email],
         fail_silently=False,
@@ -79,19 +97,12 @@ def signup(request):
 @permission_classes((AllowAny,))
 def token(request):
     serializer = TokenSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return Response(
-            USER_NOT_FOUND, status=status.HTTP_404_NOT_FOUND)
-    if confirmation_code != user.confirmation_code:
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    user = get_object_or_404(User, username=username)
+    if not default_token_generator.check_token(user, confirmation_code):
+        raise serializers.ValidationError(BAD_TOKEN)
     token = {
         'token': str(AccessToken.for_user(user)),
     }

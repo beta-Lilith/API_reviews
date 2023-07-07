@@ -107,18 +107,18 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализация данных для отзывов."""
 
     author = serializers.SlugRelatedField(
-        default=serializers.CurrentUserDefault(),
         slug_field='username',
         read_only=True,
     )
 
     def validate(self, data):
         request = self.context['request']
-        author = request.user
-        title_id = self.context['view'].kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
         if request.method == 'POST':
-            if Review.objects.filter(title=title, author=author).exists():
+            if Review.objects.filter(
+                    title=get_object_or_404(
+                        Title,
+                        id=self.context['view'].kwargs.get('title_id')),
+                    author=request.user).exists():
                 raise serializers.ValidationError(NOT_UNIQUE_REVIEW)
         return data
 

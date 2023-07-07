@@ -14,6 +14,9 @@ NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
 CHAR_SLICE = 15
+# Review
+MIN_SCORE = 1
+MAX_SCORE = 10
 # __str__ info
 USER_INFO = (
     'Имя пользователя: {username:.15}\n'
@@ -248,12 +251,9 @@ class Review(models.Model):
         related_name='reviews',
     )
     score = models.PositiveSmallIntegerField(
-        'рейтинг',
-        validators=(
-            MinValueValidator(1, 'Допустимы значения от 1 до 10'),
-            MaxValueValidator(10, 'Допустимы значения от 1 до 10'),
-        )
-    )
+        validators=[MinValueValidator(MIN_SCORE),
+                    MaxValueValidator(MAX_SCORE)],
+        verbose_name='Оценка')
     pub_date = models.DateTimeField(
         'дата публикации',
         auto_now_add=True,
@@ -263,7 +263,7 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)
         constraints = [
             models.UniqueConstraint(
                 fields=('title', 'author',),
@@ -299,4 +299,4 @@ class Comment(models.Model):
     class Meta:
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'
-        ordering = ('pub_date',)
+        ordering = ('-pub_date',)

@@ -3,7 +3,8 @@ from django.utils import timezone
 
 
 FORBIDDEN_NAME = 'Имя me использовать нельзя!'
-ERROR_MESSAGE = 'Неверно указан год создания произведения: {value}'
+ERROR_MESSAGE = ('Неверно указан год создания произведения: {value}.'
+                 'Год создания не может быть больше текущего года: {year_now}')
 
 
 def validate_username(name):
@@ -14,5 +15,7 @@ def validate_username(name):
 
 def validate_year(value):
     if value > timezone.now().year:
-        raise ValidationError(ERROR_MESSAGE.format(value=value))
+        raise ValidationError(
+            ERROR_MESSAGE.format(value=value, year_now=timezone.now().year)
+        )
     return value

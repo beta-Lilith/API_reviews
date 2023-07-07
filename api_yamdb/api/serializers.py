@@ -13,6 +13,7 @@ NOT_UNIQUE_REVIEW = 'Вы не можете добавить более одно
 
 
 class SignUpSerializer(serializers.Serializer):
+    """Сериализация данных для регистрации."""
 
     username = serializers.CharField(
         required=True,
@@ -26,6 +27,8 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
+    """Сериализация данных для получения токена."""
+
     username = serializers.CharField(
         required=True,
         max_length=USER_NAME_LENGTH,
@@ -37,6 +40,7 @@ class TokenSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализация данных пользователя."""
 
     class Meta:
         model = User

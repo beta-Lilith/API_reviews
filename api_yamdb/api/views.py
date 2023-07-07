@@ -54,6 +54,7 @@ BAD_TOKEN = (
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def signup(request):
+    """Представление для получения кода подтверждения."""
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
@@ -97,6 +98,7 @@ def signup(request):
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def token(request):
+    """Представление для получения токена."""
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
@@ -112,6 +114,8 @@ def token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """Представление для получения данных о пользователях."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)

@@ -11,13 +11,14 @@ NOT_REGEX_NAME = (
     'Можно использовать только буквы, символы {allowed_chars} и цифры, '
     'вы использовали: {used_chars}'
 )
-ERROR_MESSAGE = (
+FUTURE_YEAR = (
     'Неверно указан год создания произведения: {value}.'
     'Год создания не может быть больше текущего года: {year_now}'
 )
 
 
 def check_regex(REGEX):
+    """Вывод разрешенных специальных символов из регулярного выражения."""
     allowed_chars = ''
     for symbol in range(256):
         char = chr(symbol)
@@ -27,6 +28,7 @@ def check_regex(REGEX):
 
 
 def validate_username(name):
+    """Валидация имени пользователя."""
     if name == URL_PATH_NAME:
         raise ValidationError(FORBIDDEN_NAME.format(name=URL_PATH_NAME))
     used_wrong_chars = ' '.join(re.sub(REGEX, '', name))
@@ -43,6 +45,6 @@ def validate_username(name):
 def validate_year(value):
     if value > timezone.now().year:
         raise ValidationError(
-            ERROR_MESSAGE.format(value=value, year_now=timezone.now().year)
+            FUTURE_YEAR.format(value=value, year_now=timezone.now().year)
         )
     return value

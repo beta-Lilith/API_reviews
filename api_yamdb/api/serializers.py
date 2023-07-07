@@ -3,7 +3,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.relations import SlugRelatedField
 
 from reviews.models import (
-    CODE_LENGTH, EMAIL_LENGTH, REGEX, USER_NAME_LENGTH,
+    EMAIL_LENGTH, USER_NAME_LENGTH,
     Category, Comment, Genre, Review, Title, User,
 )
 from reviews.validators import validate_username, validate_year
@@ -12,34 +12,28 @@ from reviews.validators import validate_username, validate_year
 NOT_UNIQUE_REVIEW = 'Вы не можете добавить более одного отзыва на произведение'
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
 
-    username = serializers.RegexField(
-        regex=REGEX,
+    username = serializers.CharField(
+        required=True,
         max_length=USER_NAME_LENGTH,
-        validators=[validate_username],
+        validators=(validate_username,),
     )
     email = serializers.EmailField(
+        required=True,
         max_length=EMAIL_LENGTH,
     )
 
-    class Meta:
-        model = User
-        fields = ('username', 'email',)
 
-
-class TokenSerializer(serializers.ModelSerializer):
-    username = serializers.RegexField(
-        regex=REGEX,
+class TokenSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        required=True,
         max_length=USER_NAME_LENGTH,
+        validators=(validate_username,),
     )
     confirmation_code = serializers.CharField(
-        max_length=CODE_LENGTH,
+        required=True,
     )
-
-    class Meta:
-        model = User
-        fields = ('username', 'confirmation_code',)
 
 
 class UserSerializer(serializers.ModelSerializer):

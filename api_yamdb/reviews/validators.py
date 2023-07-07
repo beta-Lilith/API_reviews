@@ -43,6 +43,7 @@ def validate_username(name):
 
 
 def validate_year(value):
+    """Валидация года создания произведения."""
     if value > timezone.now().year:
         raise ValidationError(
             FUTURE_YEAR.format(value=value, year_now=timezone.now().year)

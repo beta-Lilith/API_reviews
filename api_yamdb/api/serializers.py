@@ -50,6 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализация данных для категорий."""
 
     class Meta:
         model = Category
@@ -57,6 +58,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализация данных для жанров."""
 
     class Meta:
         model = Genre
@@ -64,6 +66,8 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ShowTitleSerializer(serializers.ModelSerializer):
+    """Сериализация данных для отображения произведений."""
+
     category = CategorySerializer()
     genre = GenreSerializer(
         many=True,
@@ -79,6 +83,8 @@ class ShowTitleSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализация данных для произведений."""
+
     category = SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all(),
@@ -98,6 +104,8 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализация данных для отзывов."""
+
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
         slug_field='username',
@@ -120,6 +128,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализация данных для комментариев."""
+
     author = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True,

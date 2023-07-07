@@ -4,6 +4,8 @@ NOT_ALLOWED_TO_CHANGE = 'У вас недостаточно прав.'
 
 
 class IsAdmin(permissions.BasePermission):
+    """Доступ только для администратора."""
+
     message = NOT_ALLOWED_TO_CHANGE
 
     def has_permission(self, request, view):
@@ -14,6 +16,7 @@ class IsAdmin(permissions.BasePermission):
 
 
 class IsAdminOrReadOnly(IsAdmin):
+    """Доступ для администратора или только чтение."""
 
     def has_permission(self, request, view):
         return (
@@ -23,6 +26,7 @@ class IsAdminOrReadOnly(IsAdmin):
 
 
 class IsAdminOrModeratorOrAuthorOrReadOnly(IsAdminOrReadOnly):
+    """Доступ для администратора, модератора, автора или только чтение."""
 
     def has_permission(self, request, view):
         return (

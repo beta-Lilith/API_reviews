@@ -4,6 +4,8 @@ NOT_ALLOWED_TO_CHANGE = 'У вас недостаточно прав.'
 
 
 class ReadOnly(permissions.BasePermission):
+    """Доступ только для чтения."""
+
     message = NOT_ALLOWED_TO_CHANGE
 
     def has_permission(self, request, view):
@@ -32,6 +34,7 @@ class IsAdmin(permissions.BasePermission):
 
 
 class IsModerator(permissions.BasePermission):
+    """Доступ только для модератора."""
 
     message = NOT_ALLOWED_TO_CHANGE
 
@@ -43,6 +46,7 @@ class IsModerator(permissions.BasePermission):
 
 
 class IsAuthor(permissions.BasePermission):
+    """Доступ только для автора."""
 
     message = NOT_ALLOWED_TO_CHANGE
 

@@ -17,23 +17,23 @@ MAX_SCORE = 10
 SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}.'
 # __str__ info
 USER_INFO = (
-    'Имя пользователя: {username:.15}'
-    'Почта: {email}'
-    'Имя: {first_name}'
-    'Фамилия: {last_name}'
-    'Биография: {bio:.15}'
+    'Имя пользователя: {username:.15} '
+    'Почта: {email} '
+    'Имя: {first_name} '
+    'Фамилия: {last_name} '
+    'Биография: {bio:.15} '
     'Права доступа: {role}'
 )
 TITLE_INFO = (
-    'Название: {name:.15}'
-    'Категория: {category}'
-    'Жанр: {genre}'
-    'Описание: {description:.15}'
+    'Название: {name:.15} '
+    'Категория: {category} '
+    'Жанр: {genre} '
+    'Описание: {description:.15} '
     'Год: {year}'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text:.15}'
-    'Автор: {self.author}'
+    'Текст: {self.text:.15} '
+    'Автор: {self.author} '
     'Дата публикации: {self.pub_date}'
 )
 # Roles
@@ -229,7 +229,9 @@ class GenreTitle(models.Model):
 
 
 class TextAuthorDate(models.Model):
-    """Родительский класс для объектов с полями 'text', 'author' и 'pub_date'."""
+    """Родительский класс для объектов с полями
+    'text', 'author' и 'pub_date'.
+    """
 
     text = models.TextField(
         'текст',

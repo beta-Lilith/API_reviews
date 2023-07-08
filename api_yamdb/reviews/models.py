@@ -235,8 +235,8 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class BaseFeedback(models.Model):
-    """Базовый класс для отзывов и комментариев."""
+class TextAuthorDate(models.Model):
+    """Родительский класс для объектов с полями 'text', 'author' и 'pub_date'."""
 
     text = models.TextField(
         'текст',
@@ -254,7 +254,7 @@ class BaseFeedback(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('name',)
+        ordering = ('-pub_date',)
         default_related_name = '%(class)ss'
 
     def __str__(self):
@@ -265,7 +265,7 @@ class BaseFeedback(models.Model):
         )
 
 
-class Review(BaseFeedback):
+class Review(TextAuthorDate):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -281,7 +281,7 @@ class Review(BaseFeedback):
         )
     )
 
-    class Meta(BaseFeedback.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         constraints = [
@@ -292,7 +292,7 @@ class Review(BaseFeedback):
         ]
 
 
-class Comment(BaseFeedback):
+class Comment(TextAuthorDate):
     """Комментарии к отзывам."""
 
     review = models.ForeignKey(
@@ -301,6 +301,6 @@ class Comment(BaseFeedback):
         on_delete=models.CASCADE,
     )
 
-    class Meta(BaseFeedback.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'

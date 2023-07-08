@@ -140,16 +140,14 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == 'POST':
             if Review.objects.filter(
                 title=get_object_or_404(
-                Title,
-                id=self.context['view'].kwargs.get('title_id')
-            ),
-            author=request.user
-        ).exists():
-            raise serializers.ValidationError(NOT_UNIQUE_REVIEW)
-        return data  
-            
+                    Title,
+                    id=self.context['view'].kwargs.get('title_id')
+                ),
+                author=request.user
+            ).exists():
+                raise serializers.ValidationError(NOT_UNIQUE_REVIEW)
+        return data
 
-        
     class Meta:
         model = Review
         fields = (

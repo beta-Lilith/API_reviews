@@ -1,4 +1,7 @@
 import os
+import random
+import string
+
 from pathlib import Path
 from datetime import timedelta
 
@@ -132,5 +135,15 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 
+# Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+EMAIL_FROM = 'pupkin@yamdb.ru'
+
+# Confirmation code
+DIGITS = string.digits
+LETTERS = string.ascii_uppercase
+SYMBOLS = DIGITS + LETTERS
+CODE_LENGTH = 5
+CODE_DEFAULT = '#' * CODE_LENGTH
+CODE = ''.join(random.sample(SYMBOLS, CODE_LENGTH))

@@ -2,12 +2,12 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from api_yamdb.settings import CODE_DEFAULT, CODE_LENGTH
 from .validators import validate_year, validate_username
 
 # User
 USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
-CODE_LENGTH = 13
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 # Categoty, Genre,Review
@@ -18,24 +18,24 @@ MAX_SCORE = 10
 SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}.'
 # __str__ info
 USER_INFO = (
-    'Имя пользователя: {username:.15}\n'
-    'Почта: {email}\n'
-    'Имя: {first_name}\n'
-    'Фамилия: {last_name}\n'
-    'Биография: {bio:.15}\n'
-    'Права доступа: {role}\n'
+    'Имя пользователя: {username:.15} '
+    'Почта: {email}, '
+    'Имя: {first_name}, '
+    'Фамилия: {last_name}, '
+    'Биография: {bio:.15}, '
+    'Права доступа: {role}.'
 )
 TITLE_INFO = (
-    'Название: {name:.15}\n'
-    'Категория: {category}\n'
-    'Жанр: {genre}\n'
-    'Описание: {description:.15}\n'
-    'Год: {year}'
+    'Название: {name:.15}, '
+    'Категория: {category}, '
+    'Жанр: {genre}, '
+    'Описание: {description:.15}, '
+    'Год: {year}.'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text:.15}\n'
-    'Автор: {self.author}\n'
-    'Дата публикации: {self.pub_date}\n'
+    'Текст: {self.text:.15}, '
+    'Автор: {self.author}, '
+    'Дата публикации: {self.pub_date}.'
 )
 # Roles
 USER = 'user'
@@ -83,8 +83,12 @@ class User(AbstractUser):
         'роль',
         choices=ROLES,
         default=USER,
-        max_length=max(len(role[1]) for role in ROLES),
+        max_length=max(len(role) for role, _ in ROLES),
         blank=True,
+    )
+    confirmation_code = models.CharField(
+        max_length=CODE_LENGTH,
+        default=CODE_DEFAULT,
     )
 
     @property
@@ -115,8 +119,8 @@ class User(AbstractUser):
         )
 
 
-class CategoryGenre(models.Model):
-    """Абстрактный базовый класс для категорий и жанров."""
+class SlugName(models.Model):
+    """Родительский класс для объектов с полями 'name' и 'slug'."""
 
     name = models.CharField(
         'название',
@@ -139,26 +143,20 @@ class CategoryGenre(models.Model):
         return self.name
 
 
-class Category(CategoryGenre):
+class Category(SlugName):
     """Категории."""
 
-    class Meta(CategoryGenre.Meta):
+    class Meta(SlugName.Meta):
         verbose_name = 'категория'
         verbose_name_plural = 'категории'
 
-    def __str__(self):
-        return self.name
 
-
-class Genre(CategoryGenre):
+class Genre(SlugName):
     """Жанры."""
 
-    class Meta(CategoryGenre.Meta):
+    class Meta(SlugName.Meta):
         verbose_name = 'жанр'
         verbose_name_plural = 'жанры'
-
-    def __str__(self):
-        return self.name
 
 
 class Title(models.Model):
@@ -235,8 +233,10 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class ReviewComment(models.Model):
-    """Базовый класс для отзывов и комментариев."""
+class TextAuthorDate(models.Model):
+    """Родительский класс для объектов с полями
+    'text', 'author' и 'pub_date'.
+    """
 
     text = models.TextField(
         'текст',
@@ -254,7 +254,7 @@ class ReviewComment(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('author',)
+        ordering = ('-pub_date',)
         default_related_name = '%(class)ss'
 
     def __str__(self):
@@ -265,7 +265,7 @@ class ReviewComment(models.Model):
         )
 
 
-class Review(ReviewComment):
+class Review(TextAuthorDate):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -281,7 +281,7 @@ class Review(ReviewComment):
         )
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         constraints = [
@@ -292,7 +292,7 @@ class Review(ReviewComment):
         ]
 
 
-class Comment(ReviewComment):
+class Comment(TextAuthorDate):
     """Комментарии к отзывам."""
 
     review = models.ForeignKey(
@@ -301,6 +301,6 @@ class Comment(ReviewComment):
         on_delete=models.CASCADE,
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'

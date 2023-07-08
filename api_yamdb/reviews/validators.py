@@ -6,11 +6,9 @@ from django.utils import timezone
 
 # Func validate_username
 REGEX = r'^[\w.@+-]+'
-NOT_REGEX_NAME = (
-    'Можно использовать только буквы, символы {allowed_chars} и цифры, '
-    'вы использовали: {used_chars}'
-)
+NOT_REGEX_NAME = 'Нельзя использовать в имени: {used_chars}'
 URL_PATH_NAME = 'me'
+BAD_NAME = (URL_PATH_NAME,)
 FORBIDDEN_NAME = 'Имя {name} использовать нельзя!'
 # Func validate_year
 FUTURE_YEAR = (
@@ -19,35 +17,22 @@ FUTURE_YEAR = (
 )
 
 
-def check_regex(REGEX):
-    """Вывод разрешенных специальных символов из регулярного выражения."""
-    allowed_chars = ''
-    for symbol in range(256):
-        char = chr(symbol)
-        if re.match(REGEX, char) and re.match(r'\W', char):
-            allowed_chars += char
-    return allowed_chars
-
-
 def validate_username(name):
     """Валидация имени пользователя."""
-    if name == URL_PATH_NAME:
+    if name in BAD_NAME:
         raise ValidationError(FORBIDDEN_NAME.format(name=URL_PATH_NAME))
-    used_wrong_chars = ' '.join(re.sub(REGEX, '', name))
+    used_wrong_chars = ''.join(set(re.sub(REGEX, '', name)))
     if used_wrong_chars:
-        allowed_chars = ' '.join(check_regex(REGEX))
         raise ValidationError(
-            NOT_REGEX_NAME.format(
-                allowed_chars=allowed_chars,
-                used_chars=used_wrong_chars,
-            )
+            NOT_REGEX_NAME.format(used_chars=used_wrong_chars)
         )
 
 
 def validate_year(value):
     """Валидация года создания произведения."""
-    if value > timezone.now().year:
+    year_now = timezone.now().year
+    if value > year_now:
         raise ValidationError(
-            FUTURE_YEAR.format(value=value, year_now=timezone.now().year)
+            FUTURE_YEAR.format(value=value, year_now=year_now)
         )
     return value

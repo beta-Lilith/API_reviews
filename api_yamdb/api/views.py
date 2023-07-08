@@ -1,8 +1,8 @@
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, serializers, status, viewsets
@@ -14,13 +14,15 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api_yamdb.settings import CODE, CODE_DEFAULT, EMAIL_FROM
 from reviews.models import Category, Genre, Review, Title, User
 from reviews.validators import URL_PATH_NAME
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
-    IsAdminOrModeratorOrAuthorOrReadOnly,
-    IsAdminOrReadOnly,
+    IsModerator,
+    IsAuthor,
+    ReadOnly,
 )
 from .serializers import (
     CategorySerializer,
@@ -38,17 +40,13 @@ from .serializers import (
 # Send_mail info
 EMAIL_SUBJECT = 'YAMDB: Код подтверждения регистрации.'
 EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmation_code}'
-EMAIL_FROM = 'pupkin@yamdb.ru'
 # Func signup
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
-USER_NOT_UNIQUE_DATA = (
-    'Логин {username} и почта {email} уже кем-то используются.'
-)
-# Fun token
+# Func token
 BAD_TOKEN = (
-    'Проверьте, что вводите корректный код подтверждения из почты. '
-    'Новый код доступен по адресу /api/v1/auth/signup/'
+    'Ваш одноразовый код уже использован. '
+    'Новый код доступен по адресу: {url}'
 )
 
 
@@ -64,30 +62,19 @@ def signup(request):
         user, created = User.objects.get_or_create(
             username=username, email=email)
     except IntegrityError:
-        try:
-            User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response(
-                USER_NOT_UNIQUE_USERNAME.format(username=username),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        try:
-            User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response(
-                USER_NOT_UNIQUE_EMAIL.format(email=email),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
         return Response(
-            USER_NOT_UNIQUE_DATA.format(username=username, email=email),
+            USER_NOT_UNIQUE_USERNAME.format(username=username)
+            if User.objects.filter(username=username)
+            else USER_NOT_UNIQUE_EMAIL.format(email=email),
             status=status.HTTP_400_BAD_REQUEST,
         )
-    confirmation_code = default_token_generator.make_token(user)
+    user.confirmation_code = CODE
+    user.save()
     send_mail(
         EMAIL_SUBJECT,
         EMAIL_TEXT.format(
             username=username,
-            confirmation_code=confirmation_code),
+            confirmation_code=user.confirmation_code),
         EMAIL_FROM,
         [user.email],
         fail_silently=False,
@@ -105,8 +92,14 @@ def token(request):
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
-    if not default_token_generator.check_token(user, confirmation_code):
-        raise serializers.ValidationError(BAD_TOKEN)
+    if (
+        confirmation_code != user.confirmation_code
+        or confirmation_code == CODE_DEFAULT
+    ):
+        raise serializers.ValidationError(
+            BAD_TOKEN.format(url=reverse_lazy('api:signup')))
+    user.confirmation_code = CODE_DEFAULT
+    user.save()
     token = {
         'token': str(AccessToken.for_user(user)),
     }
@@ -134,11 +127,20 @@ class UserViewSet(viewsets.ModelViewSet):
     def user_info(self, request):
         serializer = self.get_serializer(
             request.user,
-            data=request.data,
-            partial=True,
         )
-        serializer.is_valid(raise_exception=True)
-        serializer.save(partial=True, role=request.user.role)
+        if request.method == 'PATCH':
+            serializer = self.get_serializer(
+                request.user,
+                data=request.data,
+                partial=True,
+            )
+            serializer.is_valid(raise_exception=True)
+            if request.user.is_admin:
+                serializer.save(partial=True)
+            else:
+                serializer.save(partial=True, role=request.user.role)
+            return Response(
+                serializer.data, status=status.HTTP_200_OK)
         return Response(
             serializer.data, status=status.HTTP_200_OK)
 
@@ -148,9 +150,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('name')
-
-    serializer_class = (ShowTitleSerializer, TitleSerializer,)
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -168,7 +168,7 @@ class CategoryGenreViewSet(
 ):
     """Базовое представление для жанров и категорий."""
 
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
     lookup_field = 'slug'
@@ -192,7 +192,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Представление для отзывов."""
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin | IsModerator | IsAuthor,)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -208,7 +208,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Представление для комментариев."""
 
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin | IsModerator | IsAuthor,)
 
     def get_review(self):
         return get_object_or_404(

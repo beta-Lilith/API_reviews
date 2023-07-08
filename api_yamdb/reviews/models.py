@@ -7,7 +7,6 @@ from .validators import validate_year, validate_username
 # User
 USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
-CODE_LENGTH = 13
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
 # Categoty, Genre,Review
@@ -83,7 +82,7 @@ class User(AbstractUser):
         'роль',
         choices=ROLES,
         default=USER,
-        max_length=max(len(role[1]) for role in ROLES),
+        max_length=max(len(role) for role, _ in ROLES),
         blank=True,
     )
 

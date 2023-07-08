@@ -53,6 +53,10 @@ class UserSerializer(serializers.ModelSerializer):
             'role',
         )
 
+    def validate_username(self, name):
+        validate_username(name)
+        return name
+
 
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализация данных для категорий."""

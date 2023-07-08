@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from api_yamdb.settings import CODE_DEFAULT, CODE_LENGTH
 from .validators import validate_year, validate_username
 
 # User
@@ -18,23 +19,23 @@ SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}
 # __str__ info
 USER_INFO = (
     'Имя пользователя: {username:.15} '
-    'Почта: {email} '
-    'Имя: {first_name} '
-    'Фамилия: {last_name} '
-    'Биография: {bio:.15} '
-    'Права доступа: {role}'
+    'Почта: {email}, '
+    'Имя: {first_name}, '
+    'Фамилия: {last_name}, '
+    'Биография: {bio:.15}, '
+    'Права доступа: {role}.'
 )
 TITLE_INFO = (
-    'Название: {name:.15} '
-    'Категория: {category} '
-    'Жанр: {genre} '
-    'Описание: {description:.15} '
-    'Год: {year}'
+    'Название: {name:.15}, '
+    'Категория: {category}, '
+    'Жанр: {genre}, '
+    'Описание: {description:.15}, '
+    'Год: {year}.'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text:.15} '
-    'Автор: {self.author} '
-    'Дата публикации: {self.pub_date}'
+    'Текст: {self.text:.15}, '
+    'Автор: {self.author}, '
+    'Дата публикации: {self.pub_date}.'
 )
 # Roles
 USER = 'user'
@@ -84,6 +85,10 @@ class User(AbstractUser):
         default=USER,
         max_length=max(len(role) for role, _ in ROLES),
         blank=True,
+    )
+    confirmation_code = models.CharField(
+        max_length=CODE_LENGTH,
+        default=CODE_DEFAULT,
     )
 
     @property

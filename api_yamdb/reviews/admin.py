@@ -66,6 +66,7 @@ class UserAdmin(admin.ModelAdmin):
         'id',
         'username',
         'email',
+        'confirmation_code',
         'first_name',
         'last_name',
         'bio',

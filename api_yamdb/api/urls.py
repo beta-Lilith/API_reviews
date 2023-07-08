@@ -47,11 +47,11 @@ router_v1.register(
     basename='users',
 )
 
-authpatterns = [
+signup_token_path = [
     path('auth/signup/', signup, name='signup'),
     path('auth/token/', token, name='token'),
 ]
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
-    path('v1/', include(authpatterns)),
+    path('v1/', include(signup_token_path)),
 ]

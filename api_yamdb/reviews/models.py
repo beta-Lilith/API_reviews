@@ -235,7 +235,7 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class ReviewComment(models.Model):
+class BaseFeedback(models.Model):
     """Базовый класс для отзывов и комментариев."""
 
     text = models.TextField(
@@ -254,7 +254,7 @@ class ReviewComment(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('author',)
+        ordering = ('name',)
         default_related_name = '%(class)ss'
 
     def __str__(self):
@@ -265,7 +265,7 @@ class ReviewComment(models.Model):
         )
 
 
-class Review(ReviewComment):
+class Review(BaseFeedback):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -281,7 +281,7 @@ class Review(ReviewComment):
         )
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(BaseFeedback.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         constraints = [
@@ -292,7 +292,7 @@ class Review(ReviewComment):
         ]
 
 
-class Comment(ReviewComment):
+class Comment(BaseFeedback):
     """Комментарии к отзывам."""
 
     review = models.ForeignKey(
@@ -301,6 +301,6 @@ class Comment(ReviewComment):
         on_delete=models.CASCADE,
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(BaseFeedback.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'

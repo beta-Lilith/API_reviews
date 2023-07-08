@@ -21,8 +21,9 @@ from reviews.validators import URL_PATH_NAME
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
-    IsAdminOrModeratorOrAuthorOrReadOnly,
-    IsAdminOrReadOnly,
+    IsModerator,
+    IsAuthor,
+    ReadOnly,
 )
 from .serializers import (
     CategorySerializer,
@@ -144,7 +145,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('name')
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -162,7 +163,7 @@ class CategoryGenreViewSet(
 ):
     """Базовое представление для жанров и категорий."""
 
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=name',)
     lookup_field = 'slug'
@@ -186,7 +187,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """Представление для отзывов."""
 
     serializer_class = ReviewSerializer
-    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin | IsModerator | IsAuthor,)
 
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
@@ -202,7 +203,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """Представление для комментариев."""
 
     serializer_class = CommentSerializer
-    permission_classes = (IsAdminOrModeratorOrAuthorOrReadOnly,)
+    permission_classes = (ReadOnly | IsAdmin | IsModerator | IsAuthor,)
 
     def get_review(self):
         return get_object_or_404(

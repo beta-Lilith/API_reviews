@@ -1,4 +1,3 @@
-from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
@@ -15,7 +14,7 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api_yamdb.settings import EMAIL_FROM
+from api_yamdb.settings import CODE, CODE_DEFAULT, EMAIL_FROM
 from reviews.models import Category, Genre, Review, Title, User
 from reviews.validators import URL_PATH_NAME
 from .filters import TitleFilter
@@ -46,7 +45,7 @@ USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то испол�
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
 # Func token
 BAD_TOKEN = (
-    'Проверьте, что вводите корректный код подтверждения из почты. '
+    'Ваш одноразовый код уже использован. '
     'Новый код доступен по адресу: {url}'
 )
 
@@ -69,12 +68,13 @@ def signup(request):
             else USER_NOT_UNIQUE_EMAIL.format(email=email),
             status=status.HTTP_400_BAD_REQUEST,
         )
-    confirmation_code = default_token_generator.make_token(user)
+    user.confirmation_code = CODE
+    user.save()
     send_mail(
         EMAIL_SUBJECT,
         EMAIL_TEXT.format(
             username=username,
-            confirmation_code=confirmation_code),
+            confirmation_code=user.confirmation_code),
         EMAIL_FROM,
         [user.email],
         fail_silently=False,
@@ -92,9 +92,14 @@ def token(request):
     username = serializer.validated_data['username']
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
-    if not default_token_generator.check_token(user, confirmation_code):
+    if (
+        confirmation_code != user.confirmation_code
+        or confirmation_code == CODE_DEFAULT
+    ):
         raise serializers.ValidationError(
             BAD_TOKEN.format(url=reverse_lazy('api:signup')))
+    user.confirmation_code = CODE_DEFAULT
+    user.save()
     token = {
         'token': str(AccessToken.for_user(user)),
     }

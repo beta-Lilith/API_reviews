@@ -229,8 +229,8 @@ class GenreTitle(models.Model):
         return f'{self.genre} {self.title}'
 
 
-class ReviewComment(models.Model):
-    """Базовый класс для отзывов и комментариев."""
+class TextAuthorDate(models.Model):
+    """Родительский класс для объектов с полями 'text', 'author' и 'pub_date'."""
 
     text = models.TextField(
         'текст',
@@ -248,7 +248,7 @@ class ReviewComment(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ('author',)
+        ordering = ('-pub_date',)
         default_related_name = '%(class)ss'
 
     def __str__(self):
@@ -259,7 +259,7 @@ class ReviewComment(models.Model):
         )
 
 
-class Review(ReviewComment):
+class Review(TextAuthorDate):
     """Отзывы на произведения."""
 
     title = models.ForeignKey(
@@ -275,7 +275,7 @@ class Review(ReviewComment):
         )
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'отзыв'
         verbose_name_plural = 'отзывы'
         constraints = [
@@ -286,7 +286,7 @@ class Review(ReviewComment):
         ]
 
 
-class Comment(ReviewComment):
+class Comment(TextAuthorDate):
     """Комментарии к отзывам."""
 
     review = models.ForeignKey(
@@ -295,6 +295,6 @@ class Comment(ReviewComment):
         on_delete=models.CASCADE,
     )
 
-    class Meta(ReviewComment.Meta):
+    class Meta(TextAuthorDate.Meta):
         verbose_name = 'комментарий'
         verbose_name_plural = 'комментарии'

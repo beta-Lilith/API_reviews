@@ -137,16 +137,19 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         request = self.context['request']
-
         if request.method == 'POST':
-            title_id = self.context['view'].kwargs.get('title_id')
-            title = get_object_or_404(Title, id=title_id)
+            if Review.objects.filter(
+                title=get_object_or_404(
+                Title,
+                id=self.context['view'].kwargs.get('title_id')
+            ),
+            author=request.user
+        ).exists():
+            raise serializers.ValidationError(NOT_UNIQUE_REVIEW)
+        return data  
+            
 
-            if Review.objects.filter(title=title, author=request.user).exists():
-                raise serializers.ValidationError(NOT_UNIQUE_REVIEW)
-
-        return data
-
+        
     class Meta:
         model = Review
         fields = (

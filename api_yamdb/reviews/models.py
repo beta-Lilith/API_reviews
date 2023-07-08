@@ -18,24 +18,24 @@ MAX_SCORE = 10
 SCORE_ERROR = 'Укажите значение от {MIN_SCORE} до {MAX_SCORE}.'
 # __str__ info
 USER_INFO = (
-    'Имя пользователя: {username:.15}\n'
-    'Почта: {email}\n'
-    'Имя: {first_name}\n'
-    'Фамилия: {last_name}\n'
-    'Биография: {bio:.15}\n'
-    'Права доступа: {role}\n'
+    'Имя пользователя: {username:.15}'
+    'Почта: {email}'
+    'Имя: {first_name}'
+    'Фамилия: {last_name}'
+    'Биография: {bio:.15}'
+    'Права доступа: {role}'
 )
 TITLE_INFO = (
-    'Название: {name:.15}\n'
-    'Категория: {category}\n'
-    'Жанр: {genre}\n'
-    'Описание: {description:.15}\n'
+    'Название: {name:.15}'
+    'Категория: {category}'
+    'Жанр: {genre}'
+    'Описание: {description:.15}'
     'Год: {year}'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text:.15}\n'
-    'Автор: {self.author}\n'
-    'Дата публикации: {self.pub_date}\n'
+    'Текст: {self.text:.15}'
+    'Автор: {self.author}'
+    'Дата публикации: {self.pub_date}'
 )
 # Roles
 USER = 'user'
@@ -115,8 +115,8 @@ class User(AbstractUser):
         )
 
 
-class CategoryGenre(models.Model):
-    """Абстрактный базовый класс для категорий и жанров."""
+class SlugName(models.Model):
+    """Родительский класс для объектов с полями 'name' и 'slug'."""
 
     name = models.CharField(
         'название',
@@ -139,26 +139,20 @@ class CategoryGenre(models.Model):
         return self.name
 
 
-class Category(CategoryGenre):
+class Category(SlugName):
     """Категории."""
 
-    class Meta(CategoryGenre.Meta):
+    class Meta(SlugName.Meta):
         verbose_name = 'категория'
         verbose_name_plural = 'категории'
 
-    def __str__(self):
-        return self.name
 
-
-class Genre(CategoryGenre):
+class Genre(SlugName):
     """Жанры."""
 
-    class Meta(CategoryGenre.Meta):
+    class Meta(SlugName.Meta):
         verbose_name = 'жанр'
         verbose_name_plural = 'жанры'
-
-    def __str__(self):
-        return self.name
 
 
 class Title(models.Model):

@@ -1,11 +1,10 @@
 import random
-import string
 
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, serializers, status, viewsets
@@ -17,10 +16,8 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api_yamdb.settings import EMAIL_FROM
+from api_yamdb.settings import CODE_DEFAULT, CODE_LENGTH, EMAIL_FROM, SYMBOLS
 from reviews.models import (
-    CODE_DEFAULT,
-    CODE_LENGTH,
     Category,
     Genre,
     Review,
@@ -54,8 +51,6 @@ EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmatio
 # Func signup
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
-# Confirmation code
-SYMBOLS = string.digits + string.ascii_uppercase
 # Func token
 BAD_TOKEN = (
     'Ваш одноразовый код уже использован или введен неверно. '
@@ -110,8 +105,6 @@ def token(request):
         confirmation_code == user.confirmation_code
         and confirmation_code != CODE_DEFAULT
     ):
-        user.confirmation_code = CODE_DEFAULT
-        user.save()
         token = {
             'token': str(AccessToken.for_user(user)),
         }
@@ -120,7 +113,7 @@ def token(request):
     user.confirmation_code = CODE_DEFAULT
     user.save()
     raise serializers.ValidationError(
-        BAD_TOKEN.format(url=reverse_lazy('api:signup')))
+        BAD_TOKEN.format(url=reverse('api:signup')))
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -142,9 +135,9 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def user_info(self, request):
         if request.method == 'GET':
-            serializer = self.get_serializer(request.user)
             return Response(
-                serializer.data, status=status.HTTP_200_OK)
+                self.get_serializer(request.user).data,
+                status=status.HTTP_200_OK)
         serializer = self.get_serializer(
             request.user,
             data=request.data,

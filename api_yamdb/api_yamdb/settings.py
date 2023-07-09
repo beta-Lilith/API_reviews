@@ -1,4 +1,5 @@
 import os
+import string
 
 from pathlib import Path
 from datetime import timedelta
@@ -142,3 +143,8 @@ EMAIL_FROM = 'pupkin@yamdb.ru'
 REGEX = r'^[\w.@+-]+'
 URL_PATH_NAME = 'me'
 BAD_NAMES = (URL_PATH_NAME,)
+
+# Confirmation code
+CODE_LENGTH = 5
+CODE_DEFAULT = '#' * CODE_LENGTH
+SYMBOLS = string.digits + string.ascii_uppercase

@@ -19,7 +19,7 @@ FUTURE_YEAR = (
 def validate_username(name):
     """Валидация имени пользователя."""
     if name in BAD_NAMES:
-        raise ValidationError(FORBIDDEN_NAME.format(name=BAD_NAMES))
+        raise ValidationError(FORBIDDEN_NAME.format(name=name))
     used_wrong_chars = ''.join(set(re.sub(REGEX, '', name)))
     if used_wrong_chars:
         raise ValidationError(

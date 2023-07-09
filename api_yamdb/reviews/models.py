@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import CODE_DEFAULT, CODE_LENGTH
 from .validators import validate_year, validate_username
 
 # User
@@ -10,6 +9,8 @@ USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
+CODE_LENGTH = 5
+CODE_DEFAULT = '#' * CODE_LENGTH
 # Categoty, Genre,Review
 NAME_LENGTH = 256
 SLUG_LENGTH = 50
@@ -25,16 +26,24 @@ USER_INFO = (
     'Биография: {bio:.15}, '
     'Права доступа: {role}.'
 )
+SLUG_NAME_INFO = (
+    'Название: {name:.15}, '
+    'Уникальный фрагмент URL-адреса: {slug:.15}.'
+)
 TITLE_INFO = (
     'Название: {name:.15}, '
-    'Категория: {category}, '
-    'Жанр: {genre}, '
+    'Категория: {category:.15}, '
+    'Жанр: {genre:.15}, '
     'Описание: {description:.15}, '
     'Год: {year}.'
 )
+GENRE_TITLE_INFO = (
+    'Жанр: {genre:.15}, '
+    'Произведение: {title:.15}.'
+)
 REVIEW_COMMENT_INFO = (
     'Текст: {self.text:.15}, '
-    'Автор: {self.author}, '
+    'Автор: {self.author:.15}, '
     'Дата публикации: {self.pub_date}.'
 )
 # Roles
@@ -120,8 +129,6 @@ class User(AbstractUser):
 
 
 class SlugName(models.Model):
-    """Родительский класс для объектов с полями 'name' и 'slug'."""
-
     name = models.CharField(
         'название',
         max_length=NAME_LENGTH,
@@ -140,7 +147,10 @@ class SlugName(models.Model):
         ordering = ('name',)
 
     def __str__(self):
-        return self.name
+        return SLUG_NAME_INFO.format(
+            name=self.name,
+            slug=self.slug,
+        )
 
 
 class Category(SlugName):
@@ -230,14 +240,13 @@ class GenreTitle(models.Model):
         verbose_name_plural = 'жанры произведений'
 
     def __str__(self):
-        return f'{self.genre} {self.title}'
+        return GENRE_TITLE_INFO.format(
+            genre=self.genre,
+            title=self.title,
+        )
 
 
 class TextAuthorDate(models.Model):
-    """Родительский класс для объектов с полями
-    'text', 'author' и 'pub_date'.
-    """
-
     text = models.TextField(
         'текст',
     )

@@ -3,13 +3,12 @@ import re
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
+from api_yamdb.settings import BAD_NAMES, REGEX
+
 
 # Func validate_username
-REGEX = r'^[\w.@+-]+'
 NOT_REGEX_NAME = 'Нельзя использовать в имени: {used_chars}'
-URL_PATH_NAME = 'me'
-BAD_NAME = (URL_PATH_NAME,)
-FORBIDDEN_NAME = 'Имя {name} использовать нельзя!'
+FORBIDDEN_NAME = '{name} использовать нельзя в качестве имени пользователя!'
 # Func validate_year
 FUTURE_YEAR = (
     'Неверно указан год создания произведения: {value}.'
@@ -19,13 +18,14 @@ FUTURE_YEAR = (
 
 def validate_username(name):
     """Валидация имени пользователя."""
-    if name in BAD_NAME:
-        raise ValidationError(FORBIDDEN_NAME.format(name=URL_PATH_NAME))
+    if name in BAD_NAMES:
+        raise ValidationError(FORBIDDEN_NAME.format(name=BAD_NAMES))
     used_wrong_chars = ''.join(set(re.sub(REGEX, '', name)))
     if used_wrong_chars:
         raise ValidationError(
             NOT_REGEX_NAME.format(used_chars=used_wrong_chars)
         )
+    return name
 
 
 def validate_year(value):

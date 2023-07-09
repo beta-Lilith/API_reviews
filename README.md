@@ -58,6 +58,6 @@ http://127.0.0.1:8000/redoc/
 
 ### Авторы
 
-- **Ксения Оскомова** [beta-Lilith](https://github.com/beta-Lilith)
-- **Павел Рванцев** [Paulman132](https://github.com/Paulman132)
-- **Ирина Баронская** [Irin-Baro](https://github.com/Irin-Baro)
+- [Ксения Оскомова](https://github.com/beta-Lilith)
+- [Павел Рванцев](https://github.com/Paulman132)
+- [Ирина Баронская](https://github.com/Irin-Baro)

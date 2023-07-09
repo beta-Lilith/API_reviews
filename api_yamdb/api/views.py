@@ -1,3 +1,6 @@
+import random
+import string
+
 from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
@@ -14,9 +17,17 @@ from rest_framework.permissions import (
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
-from api_yamdb.settings import CODE, CODE_DEFAULT, EMAIL_FROM
-from reviews.models import Category, Genre, Review, Title, User
-from reviews.validators import URL_PATH_NAME
+from api_yamdb.settings import EMAIL_FROM
+from reviews.models import (
+    CODE_DEFAULT,
+    CODE_LENGTH,
+    Category,
+    Genre,
+    Review,
+    Title,
+    User
+)
+from api_yamdb.settings import URL_PATH_NAME
 from .filters import TitleFilter
 from .permissions import (
     IsAdmin,
@@ -43,10 +54,13 @@ EMAIL_TEXT = '{username}! Ваш код подтверждения: {confirmatio
 # Func signup
 USER_NOT_UNIQUE_USERNAME = 'Логин {username} уже кем-то используется.'
 USER_NOT_UNIQUE_EMAIL = 'Почта {email} уже кем-то используется.'
+# Confirmation code
+SYMBOLS = string.digits + string.ascii_uppercase
 # Func token
 BAD_TOKEN = (
-    'Ваш одноразовый код уже использован. '
-    'Новый код доступен по адресу: {url}'
+    'Ваш одноразовый код уже использован или введен неверно. '
+    'Сгенерировать новый можно по адресу: {url}. '
+    'Отправим код на почту, указанную при регистрации.'
 )
 
 
@@ -68,7 +82,7 @@ def signup(request):
             else USER_NOT_UNIQUE_EMAIL.format(email=email),
             status=status.HTTP_400_BAD_REQUEST,
         )
-    user.confirmation_code = CODE
+    user.confirmation_code = ''.join(random.sample(SYMBOLS, CODE_LENGTH))
     user.save()
     send_mail(
         EMAIL_SUBJECT,
@@ -93,18 +107,20 @@ def token(request):
     confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(User, username=username)
     if (
-        confirmation_code != user.confirmation_code
-        or confirmation_code == CODE_DEFAULT
+        confirmation_code == user.confirmation_code
+        and confirmation_code != CODE_DEFAULT
     ):
-        raise serializers.ValidationError(
-            BAD_TOKEN.format(url=reverse_lazy('api:signup')))
+        user.confirmation_code = CODE_DEFAULT
+        user.save()
+        token = {
+            'token': str(AccessToken.for_user(user)),
+        }
+        return Response(
+            token, status=status.HTTP_200_OK)
     user.confirmation_code = CODE_DEFAULT
     user.save()
-    token = {
-        'token': str(AccessToken.for_user(user)),
-    }
-    return Response(
-        token, status=status.HTTP_200_OK)
+    raise serializers.ValidationError(
+        BAD_TOKEN.format(url=reverse_lazy('api:signup')))
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -125,22 +141,17 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def user_info(self, request):
-        serializer = self.get_serializer(
-            request.user,
-        )
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(
-                request.user,
-                data=request.data,
-                partial=True,
-            )
-            serializer.is_valid(raise_exception=True)
-            if request.user.is_admin:
-                serializer.save(partial=True)
-            else:
-                serializer.save(partial=True, role=request.user.role)
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
             return Response(
                 serializer.data, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(partial=True, role=request.user.role)
         return Response(
             serializer.data, status=status.HTTP_200_OK)
 

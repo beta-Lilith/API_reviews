@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import CODE_DEFAULT, CODE_LENGTH
 from .validators import validate_year, validate_username
 
 # User
@@ -10,6 +9,8 @@ USER_NAME_LENGTH = 150
 EMAIL_LENGTH = 254
 NOT_UNIQUE_NAME = {'unique': "Это имя пользователя уже существует."}
 NOT_UNIQUE_EMAIL = {'unique': "Этот email уже кем-то занят."}
+CODE_LENGTH = 5
+CODE_DEFAULT = '#' * CODE_LENGTH
 # Categoty, Genre,Review
 NAME_LENGTH = 256
 SLUG_LENGTH = 50

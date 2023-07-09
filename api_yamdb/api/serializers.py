@@ -12,13 +12,17 @@ from reviews.validators import validate_username, validate_year
 NOT_UNIQUE_REVIEW = 'Вы не можете добавить более одного отзыва на произведение'
 
 
-class SignUpSerializer(serializers.Serializer):
+class ValidateUsername:
+    def validate_username(self, name):
+        return validate_username(name)
+
+
+class SignUpSerializer(serializers.Serializer, ValidateUsername):
     """Сериализация данных для регистрации."""
 
     username = serializers.CharField(
         required=True,
         max_length=USER_NAME_LENGTH,
-        validators=(validate_username,),
     )
     email = serializers.EmailField(
         required=True,
@@ -26,20 +30,19 @@ class SignUpSerializer(serializers.Serializer):
     )
 
 
-class TokenSerializer(serializers.Serializer):
+class TokenSerializer(serializers.Serializer, ValidateUsername):
     """Сериализация данных для получения токена."""
 
     username = serializers.CharField(
         required=True,
         max_length=USER_NAME_LENGTH,
-        validators=(validate_username,),
     )
     confirmation_code = serializers.CharField(
         required=True,
     )
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer, ValidateUsername):
     """Сериализация данных пользователя."""
 
     class Meta:
@@ -52,10 +55,6 @@ class UserSerializer(serializers.ModelSerializer):
             'bio',
             'role',
         )
-
-    def validate_username(self, name):
-        validate_username(name)
-        return name
 
 
 class CategorySerializer(serializers.ModelSerializer):

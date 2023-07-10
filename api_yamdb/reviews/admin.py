@@ -11,10 +11,43 @@ from .models import (
 )
 
 
+CHAR_SLICE = 100
+
+
+@admin.display(description='пользователь')
+def author_name(obj):
+    return obj.author.username
+
+
+@admin.display(description='произведения')
+def title_name(obj):
+    return obj.title.name
+
+
+@admin.display(description='жанр')
+def genre_name(obj):
+    return obj.genre.name
+
+
+@admin.display(description='категория')
+def category_name(obj):
+    return obj.category.name
+
+
+@admin.display(description='отзывы')
+def review_text(obj):
+    return obj.review.text[:CHAR_SLICE]
+
+
+@admin.display(description='текст')
+def self_text(obj):
+    return obj.text[:CHAR_SLICE]
+
+
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'category', 'year', 'description'
+        'name', category_name, 'year', 'description'
     )
     search_fields = ('name', 'category', 'year')
     list_filter = ('category', 'genre')
@@ -42,7 +75,7 @@ class GenreAdmin(admin.ModelAdmin):
 @admin.register(GenreTitle)
 class GenreTitleAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'genre'
+        title_name, genre_name
     )
     empty_value_display = '-пусто-'
 
@@ -50,7 +83,7 @@ class GenreTitleAdmin(admin.ModelAdmin):
 @admin.register(Review)
 class ReviewsAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'title', 'text', 'author', 'score', 'pub_date'
+        'id', title_name, self_text, author_name, 'score', 'pub_date'
     )
     empty_value_display = '-пусто-'
 
@@ -58,7 +91,7 @@ class ReviewsAdmin(admin.ModelAdmin):
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'review', 'text', 'author', 'pub_date'
+        'id', review_text, self_text, author_name, 'pub_date'
     )
     empty_value_display = '-пусто-'
 

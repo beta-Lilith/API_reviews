@@ -27,17 +27,17 @@ USER_INFO = (
 )
 SLUG_NAME_INFO = (
     'Название: {name:.15}, '
-    'Уникальный фрагмент URL-адреса: {slug:.15}.'
+    'Уникальный фрагмент URL-адреса: {slug}.'
 )
 TITLE_INFO = (
     'Название: {name:.15}, '
-    'Категория: {category:.15}, '
+    'Категория: {category}, '
     'Жанр: {genre}, '
-    'Описание: {description}, '
+    'Описание: {description:.15}, '
     'Год: {year}.'
 )
 GENRE_TITLE_INFO = (
-    'Жанр: {genre:.15}, '
+    'Жанр: {genre}, '
     'Произведение: {title:.15}.'
 )
 REVIEW_COMMENT_INFO = (
@@ -179,7 +179,6 @@ class Title(models.Model):
     description = models.TextField(
         'описание произведения',
         blank=True,
-        null=True,
         help_text='Добавьте описание произведения',
     )
     category = models.ForeignKey(

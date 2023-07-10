@@ -40,7 +40,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 @admin.register(GenreTitle)
-class GenreTitle(admin.ModelAdmin):
+class GenreTitleAdmin(admin.ModelAdmin):
     list_display = (
         'title', 'genre'
     )

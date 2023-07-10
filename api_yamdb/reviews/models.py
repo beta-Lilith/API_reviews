@@ -32,8 +32,8 @@ SLUG_NAME_INFO = (
 TITLE_INFO = (
     'Название: {name:.15}, '
     'Категория: {category:.15}, '
-    'Жанр: {genre:.15}, '
-    'Описание: {description:.15}, '
+    'Жанр: {genre}, '
+    'Описание: {description}, '
     'Год: {year}.'
 )
 GENRE_TITLE_INFO = (
@@ -41,9 +41,9 @@ GENRE_TITLE_INFO = (
     'Произведение: {title:.15}.'
 )
 REVIEW_COMMENT_INFO = (
-    'Текст: {self.text:.15}, '
-    'Автор: {self.author:.15}, '
-    'Дата публикации: {self.pub_date}.'
+    'Текст: {text:.15}, '
+    'Автор: {author:.15}, '
+    'Дата публикации: {pub_date}.'
 )
 # Roles
 USER = 'user'
@@ -211,8 +211,8 @@ class Title(models.Model):
     def __str__(self):
         return TITLE_INFO.format(
             name=self.name,
-            category=self.category,
-            genre=self.genre,
+            category=self.category.name,
+            genre=self.genre.name,
             description=self.description,
             year=self.year,
         )
@@ -240,8 +240,8 @@ class GenreTitle(models.Model):
 
     def __str__(self):
         return GENRE_TITLE_INFO.format(
-            genre=self.genre,
-            title=self.title,
+            genre=self.genre.name,
+            title=self.title.name,
         )
 
 
@@ -268,7 +268,7 @@ class TextAuthorDate(models.Model):
     def __str__(self):
         return REVIEW_COMMENT_INFO.format(
             text=self.text,
-            author=self.author,
+            author=self.author.username,
             pub_date=self.pub_date,
         )
 

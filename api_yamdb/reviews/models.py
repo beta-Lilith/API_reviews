@@ -27,7 +27,7 @@ USER_INFO = (
 )
 SLUG_NAME_INFO = (
     'Название: {name:.15}, '
-    'Уникальный фрагмент URL-адреса: {slug}.'
+    'URL-адрес: {slug}.'
 )
 TITLE_INFO = (
     'Название: {name:.15}, '
@@ -135,7 +135,7 @@ class SlugName(models.Model):
         help_text='Укажите название',
     )
     slug = models.SlugField(
-        'уникальный фрагмент URL-адреса',
+        'URL-адрес',
         max_length=SLUG_LENGTH,
         unique=True,
         help_text='Укажите уникальный фрагмент URL-адреса',
